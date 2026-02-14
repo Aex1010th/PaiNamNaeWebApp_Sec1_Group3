@@ -167,6 +167,32 @@
                                         </button>
                                     </div>
                                     </div>
+                            <!-- Confirm deletion -->
+                             <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-start justify-center bg-black/30 backdrop-blur-sm">
+                                <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
+                                     <h3 class="mb-4 text-lg font-semibold text-red-800">ยืนยันการลบบัญชีผู้ใช้</h3>
+                                     <p class=" max-w-md mx-auto text-gray-600">กรุณากรอกรหัสผ่านเพื่อยืนยันการลบบัญชีของคุณอย่างถาวร</p>
+                                     <input type="password" 
+                                            id="deletePassword"
+                                            v-model="deletePassword" 
+                                            placeholder="กรอกรหัสผ่าน"
+                                            class="mt-4 w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                    
+                                    <div class="mt-4 flex justify-end gap-3">
+                                        <button
+                                        @click="closeDeleteModal" 
+                                        class="px-6 py-3 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:opacity-50">
+                                            ยกเลิก
+                                        </button>
+                                         <button 
+                                         @click="confirmDeleteAccount"
+                                         :disabled="!deletePassword || isDeleting"
+                                         class="flex items-center px-6 py-3 font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-red-400 disabled:cursor-not-allowed">
+                                         {{ isDeleting ? 'กำลังลบ...' : 'ยืนยันการลบ' }}
+                                        </button>
+                                    </div>
+                                </div>
+                             </div>                                    
 
                         </form>
                     </div>
@@ -209,6 +235,10 @@ const form = reactive({
     newPassword: '',
     confirmNewPassword: '',
 });
+
+const showDeleteModal = ref(false)
+const deletePassword = ref('')
+const isDeleting = ref(false)
 
 let originalUserData = null;
 
@@ -320,6 +350,35 @@ async function handleProfileUpdate() {
         form.profilePictureFile = null;
     }
 }
+
+// function delete user account
+function closeDeleteModal() {
+    showDeleteModal.value = false
+    deletePassword.value = ''
+}
+
+async function confirmDeleteAccount() {
+    if (!deletePassword.value) return
+
+    try { isDeleting.value = true
+        await $api('/users/me', {
+            method: 'DELETE',
+            body: {
+                password: deletePassword.value
+            }
+        })
+        toast.success('ลบบัญชีสำเร็จ')
+        userCookie.value = null
+        navigateTo('/')
+    } catch (err) {
+        const message = err.data?.message || 'รหัสผ่านไม่ถูกต้อง'
+        toast.error('เกิดข้อผิดพลาด', message)
+    } finally {
+        isDeleting.value = false
+        closeDeleteModal()
+    }
+}
+
 </script>
 
 <style scoped>
