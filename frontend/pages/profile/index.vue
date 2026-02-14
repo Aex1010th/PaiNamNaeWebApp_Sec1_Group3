@@ -142,6 +142,32 @@
                                     {{ isLoading ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง' }}
                                 </button>
                             </div>
+                            <!-- Danger Zone -->
+                                    <div class="pt-8 mt-10 border-t border-red-200">
+                                    <div class="p-6 border border-red-300 rounded-lg bg-red-50">
+                                        <h3 class="mb-2 text-lg font-semibold text-red-600">
+                                        ⚠️ Danger Zone
+                                        </h3>
+                                        <p class="mb-4 text-sm text-red-700">
+                                        หากลบบัญชี:
+                                        <br />
+                                        • ข้อมูลส่วนตัวทั้งหมดจะถูกลบถาวร
+                                        <br />
+                                        • ประวัติการเดินทางและการจองจะหายไป
+                                        <br />
+                                        • ไม่สามารถกู้คืนบัญชีได้
+                                        </p>
+
+                                        <button
+                                        type="button"
+                                        @click="showDeleteModal = true"
+                                        class="px-6 py-2 font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                                        >
+                                        ลบบัญชีของฉัน
+                                        </button>
+                                    </div>
+                                    </div>
+
                         </form>
                     </div>
                 </main>
