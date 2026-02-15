@@ -2,7 +2,7 @@ const express = require('express');
 const userController = require("../controllers/user.controller");
 const validate = require('../middlewares/validate');
 const upload = require('../middlewares/upload.middleware');
-const { idParamSchema, createUserSchema, updateMyProfileSchema, updateUserByAdminSchema, updateUserStatusSchema, listUsersQuerySchema } = require('../validations/user.validation');
+const { idParamSchema, createUserSchema, updateMyProfileSchema, updateUserByAdminSchema, updateUserStatusSchema, listUsersQuerySchema, deleteuser } = require('../validations/user.validation');
 const { protect, requireAdmin } = require('../middlewares/auth');
 
 const router = express.Router();
@@ -95,6 +95,13 @@ router.put(
     ]),
     validate({ body: updateMyProfileSchema }),
     userController.updateCurrentUserProfile
+);
+
+router.delete(
+    '/:id',
+    protect,
+    validate({ params: deleteuser.param, body: deleteuser.body }),
+    userController.deleteuser
 );
 
 module.exports = router;

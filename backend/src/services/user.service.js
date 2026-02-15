@@ -69,11 +69,11 @@ const searchUsers = async (opts = {}) => {
 };
 
 const getUserByEmail = async (email) => {
-    return await prisma.user.findUnique({ where: { email } })
+    return await prisma.user.findUnique({ where: { email, deletedAt: null } })
 }
 
 const getUserByUsername = async (username) => {
-    return await prisma.user.findUnique({ where: { username } })
+    return await prisma.user.findUnique({ where: { username, deletedAt: null } })
 }
 
 const comparePassword = async (user, plainPassword) => {
@@ -83,7 +83,7 @@ const comparePassword = async (user, plainPassword) => {
 const getAllUsers = async () => {
     const users = await prisma.user.findMany({
         where: {
-            isActive: true
+            isActive: true,deletedAt: null
         }
     })
 
@@ -104,7 +104,7 @@ const getAllUsers = async () => {
 }
 
 const getUserById = async (id) => {
-    const user = await prisma.user.findUnique({ where: { id } })
+    const user = await prisma.user.findUnique({ where: { id, deletedAt: null } })
 
     if (!user) {
         throw new ApiError(404, 'User not found');
@@ -116,7 +116,7 @@ const getUserById = async (id) => {
 
 const getUserPublicById = async (id) => {
     const user = await prisma.user.findUnique({
-        where: { id },
+        where: { id ,deletedAt: null },
         select: {
             id: true, firstName: true, lastName: true,
             profilePicture: true, role: true, isVerified: true,
@@ -171,7 +171,7 @@ const createUser = async (data) => {
 }
 
 const updatePassword = async (userId, currentPassword, newPassword) => {
-    const userWithPassword = await prisma.user.findUnique({ where: { id: userId } });
+    const userWithPassword = await prisma.user.findUnique({ where: { id: userId, deletedAt: null } });
 
     if (!userWithPassword) {
         return { success: false, error: 'USER_NOT_FOUND' };
@@ -186,7 +186,7 @@ const updatePassword = async (userId, currentPassword, newPassword) => {
     const hashedNewPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
 
     await prisma.user.update({
-        where: { id: userId },
+        where: { id: userId, deletedAt: null },
         data: { password: hashedNewPassword },
     });
 
@@ -194,7 +194,7 @@ const updatePassword = async (userId, currentPassword, newPassword) => {
 };
 
 const updateUserProfile = async (id, data) => {
-    const updatedUser = await prisma.user.update({ where: { id }, data });
+    const updatedUser = await prisma.user.update({ where: { id, deletedAt: null }, data });
 
     const { password, ...safeUser } = updatedUser;
     return safeUser;
@@ -226,6 +226,12 @@ const deleteUser = async (id) => {
 //     const { password, ...safeUser } = updatedUser;
 //     return safeUser;
 // };
+const deleteUserDate = async (userId) => {
+    return await prisma.user.update({
+        where: { id },
+        data: { deletedAt: new Date() } 
+    });
+};
 
 module.exports = {
     searchUsers,
@@ -239,4 +245,5 @@ module.exports = {
     deleteUser,
     updateUserProfile,
     getUserPublicById,
+    deleteUserDate,
 };
