@@ -98,10 +98,10 @@ router.put(
 );
 
 router.delete(
-    '/:id',
+    '/me',
     protect,
-    validate({ params: deleteuser.param, body: deleteuser.body }),
-    userController.deleteuser
+    validate({  body: deleteuser.body }),
+    userController.deleteUserById
 );
 
 module.exports = router;

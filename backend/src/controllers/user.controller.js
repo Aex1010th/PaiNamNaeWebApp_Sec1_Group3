@@ -197,22 +197,22 @@ const setUserStatus = asyncHandler(async (req, res) => {
 });
 
 const deleteUserById = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    const id = req.user.sub;
     const { password } = req.body;
 
     const user = await userService.getUserWithPasswordById(id); 
     if (!user || user.deletedAt) {
-        throw new ApiError(httpStatus.NOT_FOUND, "ไม่พบข้อมูลผู้ใช้งานหรือบัญชีนี้ถูกระงับแล้ว");
+        throw new ApiError(404, "ไม่พบข้อมูลผู้ใช้งานหรือบัญชีนี้ถูกระงับแล้ว");
     }
-
-    const isPasswordCorrect = await userService.comparePassword(password, user.password);
+    
+    const isPasswordCorrect = await userService.comparePassword(user, password);
     if (!isPasswordCorrect) {
-        throw new ApiError(httpStatus.BAD_REQUEST, "รหัสผ่านไม่ถูกต้อง");
+        throw new ApiError(400, "รหัสผ่านไม่ถูกต้อง");
     }
 
     await userService.deleteUserDate(id);
 
-    res.status(httpStatus.OK).json({
+    res.status(200).json({
         success: true,
         message: "ระงับการใช้งานบัญชีสำเร็จ ข้อมูลจะถูกลบถาวรภายใน 90 วัน",
         data: { deletedUserId: id }

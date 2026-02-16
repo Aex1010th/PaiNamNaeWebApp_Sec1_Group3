@@ -20,7 +20,6 @@ const idParamSchema = z.object({
 });
 
 const deleteuser = {
-    param: idParamSchema,
     body: z.object({
         password: z.string().min(8, "กรุณากรอกรหัสผ่านเพื่อยืนยัน"),
     })

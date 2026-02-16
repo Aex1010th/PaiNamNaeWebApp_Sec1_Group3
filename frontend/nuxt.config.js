@@ -37,4 +37,10 @@ export default defineNuxtConfig({
   build: {
     transpile: ['leaflet']
   },
+  ssr: false,
+  nitro: {
+    prerender: {
+      crawlLinks: true,
+    }
+  },
 });

@@ -80,6 +80,7 @@ const comparePassword = async (user, plainPassword) => {
     return bcrypt.compare(plainPassword, user.password);
 };
 
+
 const getAllUsers = async () => {
     const users = await prisma.user.findMany({
         where: {
@@ -226,12 +227,21 @@ const deleteUser = async (id) => {
 //     const { password, ...safeUser } = updatedUser;
 //     return safeUser;
 // };
-const deleteUserDate = async (userId) => {
+
+const getUserWithPasswordById = async (id) => {
+    return await prisma.user.findFirst({
+        where: { id, deletedAt: null }
+    });
+};
+
+const deleteUserDate = async (id) => {
     return await prisma.user.update({
         where: { id },
         data: { deletedAt: new Date() } 
     });
 };
+
+
 
 module.exports = {
     searchUsers,
@@ -246,4 +256,5 @@ module.exports = {
     updateUserProfile,
     getUserPublicById,
     deleteUserDate,
+    getUserWithPasswordById,
 };
