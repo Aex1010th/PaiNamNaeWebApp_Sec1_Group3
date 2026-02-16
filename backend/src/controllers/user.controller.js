@@ -196,6 +196,29 @@ const setUserStatus = asyncHandler(async (req, res) => {
     res.status(200).json({ success: true, message: "User status updated", data: updatedUser });
 });
 
+const deleteUserById = asyncHandler(async (req, res) => {
+    const id = req.user.sub;
+    const { password } = req.body;
+
+    const user = await userService.getUserWithPasswordById(id); 
+    if (!user || user.deletedAt) {
+        throw new ApiError(404, "ไม่พบข้อมูลผู้ใช้งานหรือบัญชีนี้ถูกระงับแล้ว");
+    }
+    
+    const isPasswordCorrect = await userService.comparePassword(user, password);
+    if (!isPasswordCorrect) {
+        throw new ApiError(400, "รหัสผ่านไม่ถูกต้อง");
+    }
+
+    await userService.deleteUserDate(id);
+
+    res.status(200).json({
+        success: true,
+        message: "ระงับการใช้งานบัญชีสำเร็จ ข้อมูลจะถูกลบถาวรภายใน 90 วัน",
+        data: { deletedUserId: id }
+    });
+});
+
 module.exports = {
     adminListUsers,
     getAllUsers,
@@ -207,5 +230,5 @@ module.exports = {
     adminUpdateUser,
     adminDeleteUser,
     setUserStatus,
-
+    deleteUserById,
 };

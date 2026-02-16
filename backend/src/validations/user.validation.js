@@ -12,11 +12,18 @@ const createUserSchema = z.object({
     nationalIdNumber: z.string().length(13, "nationalIdNumber must be 13 digits"),
     nationalIdExpiryDate: z.string().datetime({ message: "Invalid date format for nationalIdExpiryDate" }),
     role: z.nativeEnum(Role).optional()
+    
 })
 
 const idParamSchema = z.object({
     id: z.string().cuid({ message: "Invalid CUID format" }),
 });
+
+const deleteuser = {
+    body: z.object({
+        password: z.string().min(8, "กรุณากรอกรหัสผ่านเพื่อยืนยัน"),
+    })
+};
 
 const updateMyProfileSchema = z.object({
     email: z.string().email("Invalid email format").optional(),
@@ -72,4 +79,5 @@ module.exports = {
     updateUserStatusSchema,
     updateUserByAdminSchema,
     listUsersQuerySchema,
+    deleteuser,
 }
