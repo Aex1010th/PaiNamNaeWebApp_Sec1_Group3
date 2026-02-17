@@ -1,5 +1,7 @@
 require("dotenv").config();
 
+require('./src/utils/cleanUser');/*เรียกใช้การลบผู้ใช้ ที่ถูกตั้งให้ถูกลบหลังจาก90วัน*/ 
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');

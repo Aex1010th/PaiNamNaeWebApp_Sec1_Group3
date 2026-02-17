@@ -88,7 +88,7 @@ model User {
   notification          Notification[]
   createdRoutes         Route[]             @relation("DriverRoutes")
   bookings              Booking[]           @relation("PassengerBookings")
-  deleteAt              DateTime?
+  deletedAt              DateTime?
   @@index([role])
   @@index([isActive])
   @@index([isVerified])
