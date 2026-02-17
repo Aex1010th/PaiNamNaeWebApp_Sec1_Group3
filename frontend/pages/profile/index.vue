@@ -369,13 +369,23 @@ async function confirmDeleteAccount() {
         })
         toast.success('ลบบัญชีสำเร็จ')
         userCookie.value = null
-        navigateTo('/')
+        if (process.client) {
+            const cookieNames = ['user', 'token', 'auth-token', 'refresh-token', 'session']
+            cookieNames.forEach(name => {
+                const c = useCookie(name)
+                c.value = null
+                document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+            })
+            localStorage.clear()
+            sessionStorage.clear()
+        }
+        setTimeout(() => { window.location.href = '/' }, 500)
+
     } catch (err) {
-        const message = err.data?.message || 'รหัสผ่านไม่ถูกต้อง'
-        toast.error('เกิดข้อผิดพลาด', message)
-    } finally {
         isDeleting.value = false
         closeDeleteModal()
+        const message = err.data?.message || 'รหัสผ่านไม่ถูกต้อง'
+        toast.error(message)
     }
 }
 
