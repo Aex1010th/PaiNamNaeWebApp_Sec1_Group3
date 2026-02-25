@@ -53,6 +53,20 @@ enum LicenseType {
   LIFETIME             // ตลอดชีพ
 }
 
+enum ReportType {
+  PASSENGER
+  SYSTEM
+  ACCIDENT
+  OTHER
+}
+
+enum ReportStatus {
+  RECEIVED
+  IN_PROGRESS
+  RESOLVED
+  REJECTED
+}
+
 enum NotificationType {
   SYSTEM
   VERIFICATION
@@ -89,6 +103,11 @@ model User {
   createdRoutes         Route[]             @relation("DriverRoutes")
   bookings              Booking[]           @relation("PassengerBookings")
   deletedAt              DateTime?
+
+  reportsCreated   Report[] @relation("Reporter")
+  reportsTargeted  Report[] @relation("TargetUser")
+  adminReplies     Report[] @relation("AdminReply")
+
   @@index([role])
   @@index([isActive])
   @@index([isVerified])
@@ -185,9 +204,10 @@ model Route {
   landmarks       Json?       @db.Json
   steps           Json?       @db.Json
   createdAt       DateTime    @default(now())
-  updatedAt     DateTime @updatedAt
+  updatedAt       DateTime @updatedAt
 
   bookings        Booking[]
+  reports         Report[]
 
   @@index([driverId])
   @@index([vehicleId])
@@ -210,4 +230,41 @@ model Booking {
   pickupLocation  Json          @db.Json
   dropoffLocation Json          @db.Json
   createdAt       DateTime      @default(now())
+}
+
+model Report {
+  id            String        @id @default(cuid())
+
+  reporterId    String
+  reporter      User          @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  targetUserId  String?
+  targetUser    User?         @relation("TargetUser", fields: [targetUserId], references: [id])
+
+  routeId       String?
+  route         Route?        @relation(fields: [routeId], references: [id], onDelete: Cascade)
+
+  type          ReportType
+  title         String
+  description   String
+  media         Json?         @db.Json
+
+  status        ReportStatus  @default(RECEIVED)
+  receivedAt    DateTime      @default(now())
+  inProgressAt  DateTime?
+  resolvedAt    DateTime?
+  rejectedAt    DateTime?
+
+  adminReply    String?
+  adminId       String?
+  admin         User?         @relation("AdminReply", fields: [adminId], references: [id])
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([reporterId])
+  @@index([targetUserId])
+  @@index([routeId])
+  @@index([status])
+  @@index([createdAt])
 }
