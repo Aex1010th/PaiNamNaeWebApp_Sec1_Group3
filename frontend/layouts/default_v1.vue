@@ -25,6 +25,15 @@
                             </NuxtLink>
                         </div>
 
+                        <div
+                            v-if="user && (user.role === 'PASSENGER' || user.role === 'DRIVER' || user.role === 'ADMIN')">
+                            <NuxtLink to="/createTrip"
+                                class="text-gray-600 transition-colors duration-200 hover:text-blue-600"
+                                :class="{ 'text-blue-600': $route.path === '/createTrip' }">
+                                รายงานปัญหา
+                            </NuxtLink>
+                        </div>
+
                         <!-- ผู้โดยสาร: ลิงก์เดี่ยว ไม่มีดรอปดาวน์ -->
                         <div v-if="user && user.role === 'PASSENGER'">
                             <NuxtLink to="/myTrip"
@@ -210,6 +219,10 @@
                                     class="flex items-center block w-full px-4 py-2 text-left text-gray-700 transition-colors duration-200 hover:bg-blue-50 hover:text-blue-600">
                                     บัญชีของฉัน
                                 </NuxtLink>
+                                <NuxtLink to="/admin/users"
+                                    class="flex items-center block w-full px-4 py-2 text-left text-gray-700 transition-colors duration-200 hover:bg-blue-50 hover:text-blue-600">
+                                    รายงานปัญหา
+                                </NuxtLink>
                                 <button @click="logout"
                                     class="flex items-center block w-full px-4 py-2 text-left text-red-600 transition-colors duration-200 hover:bg-red-50 hover:text-red-700">
                                     Logout
@@ -240,6 +253,10 @@
                                 <NuxtLink to="/profile"
                                     class="flex items-center block w-full px-4 py-2 text-left text-gray-700 transition-colors duration-200 hover:bg-blue-50 hover:text-blue-600">
                                     บัญชีของฉัน
+                                </NuxtLink>
+                                <NuxtLink to="/admin/users"
+                                    class="flex items-center block w-full px-4 py-2 text-left text-gray-700 transition-colors duration-200 hover:bg-blue-50 hover:text-blue-600">
+                                    รายงานปัญหา
                                 </NuxtLink>
                                 <NuxtLink to="/admin/users"
                                     class="flex items-center block w-full px-4 py-2 text-left text-gray-700 transition-colors duration-200 hover:bg-blue-50 hover:text-blue-600">
@@ -362,6 +379,10 @@
                                     class="flex items-center block w-full px-3 py-2 text-left text-gray-600 transition-colors duration-200 rounded-md hover:bg-blue-50 hover:text-blue-600">
                                     บัญชีของฉัน
                                 </NuxtLink>
+                                <NuxtLink to="/admin/users"
+                                    class="flex items-center block w-full px-4 py-2 text-left text-gray-700 transition-colors duration-200 hover:bg-blue-50 hover:text-blue-600">
+                                    รายงานปัญหา
+                                </NuxtLink>
                                 <button @click="logout"
                                     class="flex items-center block w-full px-3 py-2 text-left text-red-600 transition-colors duration-200 rounded-md hover:bg-red-50 hover:text-red-700">
                                     Logout
@@ -387,6 +408,10 @@
                                 <NuxtLink to="/admin/users" @click="closeMobileMenu"
                                     class="flex items-center block w-full px-3 py-2 text-left text-gray-600 transition-colors duration-200 rounded-md hover:bg-blue-50 hover:text-blue-600">
                                     Dashboard
+                                </NuxtLink>
+                                <NuxtLink to="/admin/users"
+                                    class="flex items-center block w-full px-4 py-2 text-left text-gray-700 transition-colors duration-200 hover:bg-blue-50 hover:text-blue-600">
+                                    รายงานปัญหา
                                 </NuxtLink>
                                 <button @click="logout"
                                     class="flex items-center block w-full px-3 py-2 text-left text-red-600 transition-colors duration-200 rounded-md hover:bg-red-50 hover:text-red-700">
