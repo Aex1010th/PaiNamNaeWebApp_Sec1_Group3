@@ -54,10 +54,14 @@ enum LicenseType {
 }
 
 enum ReportType {
-  PASSENGER
-  SYSTEM
   ACCIDENT
+  PASSENGER_BEHAVIOR
   OTHER
+}
+
+enum ReportCategory {
+  SYSTEM
+  TRIP
 }
 
 enum ReportStatus {
@@ -244,7 +248,8 @@ model Report {
   routeId       String?
   route         Route?        @relation(fields: [routeId], references: [id], onDelete: Cascade)
 
-  type          ReportType
+  type          ReportType?
+  category      ReportCategory
   title         String
   description   String
   media         Json?         @db.Json
