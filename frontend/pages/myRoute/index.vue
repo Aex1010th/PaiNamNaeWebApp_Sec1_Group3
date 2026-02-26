@@ -221,8 +221,16 @@
                                     <img :src="trip.passenger.image" :alt="trip.passenger.name"
                                         class="object-cover rounded-full w-15 h-15" />
                                     <div class="flex-1">
-                                        <div class="flex items-center">
+                                        <div class="flex items-center space-x-2">
                                             <h5 class="font-medium text-gray-900">{{ trip.passenger.name }}</h5>
+                                            <!--เพิ่มธงสำหรับรายงานปัญหาที่นี่-->
+                                            <NuxtLink
+                                            :to="`/report/reportform?route=${trip.routeId}&passenger=${trip.passenger.id}`"
+                                            class="text-red-500 hover:text-red-700 text-sm"
+                                            title="รายงานปัญหา"
+                                            @click.stop>
+                                            🚩
+                                            </NuxtLink>
 
                                             <div v-if="trip.passenger.isVerified"
                                                 class="relative group ml-1.5 flex items-center">
