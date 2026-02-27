@@ -148,6 +148,11 @@
 
 <script setup>
 import { reactive,ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const reports = useReports()
+
+const router = useRouter()
 
 const form = reactive({
   title: '',
@@ -176,9 +181,21 @@ const submitForm = () => {
     return
   }
 
+  reports.value.push({
+    id: Date.now(),
+    title: form.title,
+    description: form.description,
+    createdAt: new Date().toLocaleString(),
+    updatedAt: null,
+    status: 'ส่งรายงานปัญหาแล้ว',
+    adminMessage: ''
+  })
+
   alert('ส่งรายงานปัญหาสำเร็จ ขอบคุณสำหรับการรายงานปัญหาของคุณ')
 
   resetForm()
+
+  router.push('/')
 }
 
 const categoryButton = (type) => {
