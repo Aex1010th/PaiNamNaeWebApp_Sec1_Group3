@@ -22,7 +22,9 @@ app.use(helmet());
 
 const corsOptions = {
     origin: ['http://localhost:3001',
-        'https://amazing-crisp-9bcb1a.netlify.app'],
+        'https://amazing-crisp-9bcb1a.netlify.app',
+        'http://csse1369.cpkku.com',
+        'https://csse1369.cpkku.com'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -95,3 +97,4 @@ process.on('unhandledRejection', (err) => {
     console.error(err);
     process.exit(1);
 });
+
