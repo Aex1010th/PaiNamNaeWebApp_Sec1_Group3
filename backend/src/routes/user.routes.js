@@ -97,7 +97,7 @@ router.put(
     userController.updateCurrentUserProfile
 );
 
-// DELETE /api/users/me
+// DELETE /api/users/me 
 router.delete(
     '/me',
     protect,
