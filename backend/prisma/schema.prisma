@@ -56,6 +56,9 @@ enum LicenseType {
 enum ReportType {
   ACCIDENT
   PASSENGER_BEHAVIOR
+  APPLICATION_PROBLEM
+  MAP_PROBLEM
+  SYSTEM_SLOW
   OTHER
 }
 
@@ -248,7 +251,7 @@ model Report {
   routeId       String?
   route         Route?        @relation(fields: [routeId], references: [id], onDelete: Cascade)
 
-  type          ReportType?
+  type          ReportType
   category      ReportCategory
   title         String
   description   String
