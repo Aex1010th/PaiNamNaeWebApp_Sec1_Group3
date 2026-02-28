@@ -230,11 +230,11 @@ import { reactive,ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 const reports = useReports()
-
 const router = useRouter()
-
 const route = useRoute()
 
+const passengerId = route.query.passenger || null
+const routeId = route.query.route || null
 const form = reactive({
   title: '',
   detail: '',
@@ -270,6 +270,8 @@ const submitForm = () => {
     images: form.images,   
     videos: form.videos,
     audios: form.audios,
+    passengerId: passengerId,
+    routeId: routeId,
     createdAt: new Date(),
     updatedAt: null,
     status: 'ส่งรายงานปัญหาแล้ว',
