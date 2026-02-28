@@ -50,6 +50,11 @@
                   <p class="font-medium text-gray-800">{{ incident.reportTime }}</p>
                 </div>
                 <div class="md:col-span-2 border-t pt-4 mt-2">
+                  <p class="text-xs text-gray-500 mb-1 uppercase tracking-wider">Description</p>
+                  <p class="font-medium text-gray-800 leading-relaxed whitespace-pre-line">{{ incident.description }}
+                  </p>
+                </div>
+                <div class="md:col-span-2 border-t pt-4 mt-2">
                   <p class="text-xs text-gray-500 mb-1 uppercase tracking-wider">Reported By</p>
                   <p class="font-medium text-gray-800">{{ incident.user }}</p>
                 </div>
@@ -63,7 +68,8 @@
                   placeholder="Write your response, findings, or reason for rejection here..."
                   class="w-full p-4 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm text-gray-700 resize-y"></textarea>
                 <div class="flex items-center justify-between">
-                  <p class="text-xs text-gray-500">* Please provide details before rejecting or resolving the incident.</p>
+                  <p class="text-xs text-gray-500">* Please provide details before rejecting or resolving the incident.
+                  </p>
                   <div class="flex gap-3">
                     <button @click="handleAction('REJECTED')" :disabled="!adminReply.trim()"
                       class="px-5 py-2.5 bg-white border border-red-200 text-red-600 rounded-xl hover:bg-red-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed">
@@ -141,9 +147,11 @@ const fetchIncidentDetail = () => {
       type: 'SYSTEM',
       category: 'App Crash',
       status: 'PENDING',
+      description: 'The app crashed immediately upon startup when attempting to accept a ride. The user reported seeing a black screen and an error message before the app closed.',
       media: [
         { id: 1, type: 'image', name: 'error_screenshot.jpg', url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=400&auto=format&fit=crop' },
-        { id: 2, type: 'video', name: 'screen_recording.mp4', url: 'https://www.w3schools.com/html/mov_bbb.mp4' }
+        { id: 2, type: 'video', name: 'screen_recording.mp4', url: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+        { id: 3, type: 'audio', name: 'voice_note.mp3', url: 'https://www.w3schools.com/html/horse.mp3' }
       ]
     }
   }, 500)
@@ -215,7 +223,7 @@ function defineGlobalScripts() {
 }
 
 function cleanupGlobalScripts() {
-  window.removeEventListener('resize', window.__adminResizeHandler__ || (() => {}))
+  window.removeEventListener('resize', window.__adminResizeHandler__ || (() => { }))
   delete window.toggleSidebar
   delete window.toggleMobileSidebar
   delete window.toggleSubmenu
@@ -232,16 +240,47 @@ onUnmounted(() => cleanupGlobalScripts())
 </script>
 
 <style>
-.sidebar { transition: width 0.3s ease; }
-.sidebar.collapsed { width: 80px; }
-.sidebar:not(.collapsed) { width: 280px; }
-.sidebar-item { transition: all 0.3s ease; }
-.sidebar.collapsed .sidebar-text { display: none; }
-.sidebar.collapsed .sidebar-item { justify-content: center; }
-.main-content { transition: margin-left 0.3s ease; }
+.sidebar {
+  transition: width 0.3s ease;
+}
+
+.sidebar.collapsed {
+  width: 80px;
+}
+
+.sidebar:not(.collapsed) {
+  width: 280px;
+}
+
+.sidebar-item {
+  transition: all 0.3s ease;
+}
+
+.sidebar.collapsed .sidebar-text {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-item {
+  justify-content: center;
+}
+
+.main-content {
+  transition: margin-left 0.3s ease;
+}
+
 @media (max-width: 1024px) {
-  .sidebar { position: fixed; z-index: 1000; transform: translateX(-100%); }
-  .sidebar.mobile-open { transform: translateX(0); }
-  .main-content { margin-left: 0 !important; }
+  .sidebar {
+    position: fixed;
+    z-index: 1000;
+    transform: translateX(-100%);
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+  }
 }
 </style>
