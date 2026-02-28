@@ -1,81 +1,63 @@
-const express = require('express');
-const validate = require('../middlewares/validate');
+import express from 'express';
+import { route } from './user.routes';
+import upload from '../middlewares/upload.middleware';
 const { protect, requireAdmin } = require('../middlewares/auth');
-const reportController = require('../controllers/report.controller');
-const {
-  createReportSchema,
-  updateReportSchema,
-  reportIdParamSchema,
-  getReportsQuerySchema,
-} = require('../validations/report.validation');
-
+const validate = require('../middlewares/validate');
 const router = express.Router();
 
+// Get all reports (
 router.get(
-  '/admin',
-  protect,
-  requireAdmin,
-  validate({ query: getReportsQuerySchema }),
-  reportController.getReports
+    '/admin',
+    protect,
+    requireAdmin,
+    validate({ query: listReportsQuerySchema }),
+    reportController.admin.ListReports
 );
 
+// Get report by ID
 router.get(
-  '/admin/:id',
-  protect,
-  requireAdmin,
-  validate({ params: reportIdParamSchema }),
-  reportController.getReport
+    '/admin/:id',
+    protect,
+    requireAdmin,
+    validate({ params: reportIdschema }),
+    reportController.admin.GetReportById
 );
 
+// Admin update report status
 router.patch(
-  '/admin/:id',
-  protect,
-  requireAdmin,
-  validate({ params: reportIdParamSchema, body: updateReportSchema }),
-  reportController.updateReport
+    '/admin/:id/status',
+    protect,
+    requireAdmin,
+    validate({ params: reportIdschema, body: updateReportStatusSchema }),
+    reportController.admin.UpdateReportStatus
 );
 
-router.delete(
-  '/admin/:id',
-  protect,
-  requireAdmin,
-  validate({ params: reportIdParamSchema }),
-  reportController.deleteReport
-);
-
-router.post(
-  '/',
-  protect,
-  validate({ body: createReportSchema }),
-  reportController.createReport
-);
-
+// User get All reports
 router.get(
-  '/',
-  protect,
-  validate({ query: getReportsQuerySchema }),
-  reportController.getReports
+    '/me',
+    protect,
+    validate({ query: listMyReportsQuerySchema }),
+    reportController.getMyReports
 );
 
+// User get report by ID
 router.get(
-  '/:id',
-  protect,
-  validate({ params: reportIdParamSchema }),
-  reportController.getReport
+    '/me/:id',
+    protect,
+    validate({ params: reportIdschema }),
+    reportController.getMyReportById
 );
 
-router.patch(
-  '/:id',
-  protect,
-  validate({ params: reportIdParamSchema, body: updateReportSchema }),
-  reportController.updateReport
-);
-
-router.delete(
-  '/:id',
-  protect,
-  validate({ params: reportIdParamSchema }),
-  reportController.deleteReport
+route.post(
+    '/',
+    protect,
+    upload.fields([
+    { name: 'images' },
+    { name: 'videos' },
+    { name: 'audios' }
+  ]),
+    validate({ body: createReportSchema }),
+    reportController.createReport
 );
 
 module.exports = router;
