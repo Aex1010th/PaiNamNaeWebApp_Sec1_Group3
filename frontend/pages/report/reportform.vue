@@ -119,6 +119,42 @@
                 • {{ file.name }}
             </li>
         </ul>
+        <!--preview-->
+        <div v-if="form.images.length" class="mt-4">
+          <div class="grid grid-cols-3 gap-3">
+            <img
+            v-for="(file, index) in form.images"
+            :key="index"
+            :src="file.url"
+            @click="openPreview('image', file.url)"
+            class="w-full h-full object-cover rounded cursor-pointer hover:scale-105 transition"/>
+          </div>
+        </div>
+        <div v-if="form.videos.length" class="mt-4">
+          <div class="space-y-3">
+            <video
+            v-for="(file, index) in form.videos"
+            :key="index"
+            :src="file.url"
+            @click="openPreview('video', file.url)"
+            class="w-full h-full object-cover rounded cursor-pointer hover:scale-105 transition">
+            </video>
+          </div>
+        </div>
+        
+        <div v-if="form.audios.length" class="mt-4">
+          <div class="space-y-2">
+            <div
+            v-for="(file, index) in form.audios"
+            :key="index"
+            @click="openPreview('audio', file.url)"
+            class="p-2 bg-gray-100 rounded cursor-pointer hover:bg-gray-200"
+            >
+             ▶ {{ file.name }}
+            </div>
+          </div>
+        </div>
+
         </div>
 
       </div>
@@ -143,22 +179,66 @@
 
     </div>
   </div>
+  <!-- Preview Modal -->
+<div
+  v-if="preview.show"
+  class="fixed inset-0 bg-white/40 backdrop-blur-sm flex items-center justify-center z-50"
+  @click.self="closePreview"
+>
+  <div class="relative max-w-5xl w-full px-4">
+
+    <button
+      @click="closePreview"
+      class="absolute -top-12 right-0 bg-black/70 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-black transition"
+    >
+      ✕
+    </button>
+
+    <img
+      v-if="preview.type === 'image'"
+      :src="preview.url"
+      class="w-full max-h-[80vh] object-contain rounded-lg"
+    />
+
+    <video
+      v-if="preview.type === 'video'"
+      :src="preview.url"
+      controls
+      autoplay
+      class="w-full max-h-[80vh] rounded-lg"
+    ></video>
+
+    <div
+      v-if="preview.type === 'audio'"
+      class="bg-white p-6 rounded-lg"
+    >
+      <audio
+        :src="preview.url"
+        controls
+        autoplay
+        class="w-full"
+      ></audio>
+    </div>
+
+  </div>
+</div>
 </template>
 
 
 <script setup>
 import { reactive,ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const reports = useReports()
 
 const router = useRouter()
 
+const route = useRoute()
+
 const form = reactive({
   title: '',
   detail: '',
-  category: 'system',
-  tag: '',
+  category: route.query.category || 'system',  tag: '',
   images: [],
   videos: [],
   audios: []
@@ -184,8 +264,13 @@ const submitForm = () => {
   reports.value.push({
     id: Date.now(),
     title: form.title,
-    description: form.description,
-    createdAt: new Date().toLocaleString(),
+    description: form.detail,
+    category: form.category,
+    tag: form.tag,
+    images: form.images,   
+    videos: form.videos,
+    audios: form.audios,
+    createdAt: new Date(),
     updatedAt: null,
     status: 'ส่งรายงานปัญหาแล้ว',
     adminMessage: ''
@@ -232,7 +317,14 @@ const handleUpload = (e) => {
       alert('อัปโหลดรูปได้ไม่เกิน 3 รูป')
       return
     }
-    form.images.push(...files)
+
+    form.images.push(
+      ...files.map(file => ({
+        file,
+        url: URL.createObjectURL(file),
+        name: file.name
+      }))
+    )
   }
 
   if (activeUpload.value === 'video') {
@@ -240,7 +332,14 @@ const handleUpload = (e) => {
       alert('อัปโหลดวิดีโอได้ไม่เกิน 3 ไฟล์')
       return
     }
-    form.videos.push(...files)
+
+    form.videos.push(
+      ...files.map(file => ({
+        file,
+        url: URL.createObjectURL(file),
+        name: file.name
+      }))
+    )
   }
 
   if (activeUpload.value === 'audio') {
@@ -248,8 +347,34 @@ const handleUpload = (e) => {
       alert('อัปโหลดเสียงได้ไม่เกิน 3 ไฟล์')
       return
     }
-    form.audios.push(...files)
+
+    form.audios.push(
+      ...files.map(file => ({
+        file,
+        url: URL.createObjectURL(file),
+        name: file.name
+      }))
+    )
   }
+}
+
+// preview
+const preview = reactive({
+  show: false,
+  type: '',
+  url: ''
+})
+
+const openPreview = (type, url) => {
+  preview.show = true
+  preview.type = type
+  preview.url = url
+}
+
+const closePreview = () => {
+  preview.show = false
+  preview.type = ''
+  preview.url = ''
 }
 
 </script>

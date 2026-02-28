@@ -225,7 +225,7 @@
                                             <h5 class="font-medium text-gray-900">{{ trip.passenger.name }}</h5>
                                             <!--เพิ่มธงสำหรับรายงานปัญหาที่นี่-->
                                             <NuxtLink
-                                            :to="`/report/reportform?route=${trip.routeId}&passenger=${trip.passenger.id}`"
+                                            :to="`/report/reportform?route=${trip.routeId}&passenger=${trip.passenger.id}&category=trip`"
                                             class="text-red-500 hover:text-red-700 text-sm"
                                             title="รายงานปัญหา"
                                             @click.stop>

@@ -47,23 +47,23 @@
             v-for="report in reports"
             :key="report.id"
             :to="`/report/history/${report.id}`"
-            class="block p-5 mb-4 transition border border-gray-200 rounded-lg cursor-pointer hover:shadow-md hover:border-red-400"
+            class="block p-5 mb-4 transition border border-gray-200 rounded-lg cursor-pointer hover:shadow-md"
           >
-            <div class="text-lg font-semibold text-red-600">
+          <div class="flex items-center justify-between">
+            <div class="text-lg font-semibold text-blue-600">
               {{ report.title }}
             </div>
 
+            <span
+              class="px-3 py-1 text-xs text-white rounded-full"
+              :class="statusColor(report.status)"
+            >
+              {{ report.status }}
+            </span>
+          </div>
+
             <div class="mt-1 text-sm text-gray-500">
               รายงานเมื่อ {{ formatDate(report.createdAt) }}
-            </div>
-
-            <div class="mt-2 text-sm">
-              <span
-                class="px-3 py-1 text-white rounded-full"
-                :class="statusColor(report.status)"
-              >
-                {{ report.status }}
-              </span>
             </div>
           </NuxtLink>
         </div>
