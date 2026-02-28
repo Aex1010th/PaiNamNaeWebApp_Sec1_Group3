@@ -16,12 +16,9 @@
             <p class="text-xs text-gray-500 uppercase">Total Reports</p>
             <p class="text-2xl font-semibold text-gray-800">{{ totalCount }}</p>
           </div>
+      
           <div class="bg-white p-4 rounded-xl border shadow-sm">
-            <p class="text-xs text-gray-500 uppercase">OPEN</p>
-            <p class="text-2xl font-semibold text-red-600">{{ openCount }}</p>
-          </div>
-          <div class="bg-white p-4 rounded-xl border shadow-sm">
-            <p class="text-xs text-gray-500 uppercase">IN_PROGRESS</p>
+            <p class="text-xs text-gray-500 uppercase">Pending</p>
             <p class="text-2xl font-semibold text-yellow-600">{{ inProgressCount }}</p>
           </div>
           <div class="bg-white p-4 rounded-xl border shadow-sm">
@@ -162,23 +159,39 @@ const goToDetail = async (item) => {
   }
 }
 
+
 const incidents = ref([
-  { id: 'RPT-001', title: 'Driver was rude', reportTime: '2026-02-26 10:30', user: 'user1@email.com', type: 'TRIP', category: 'Driver Behavior', status: 'PENDING' },
+  { id: 'RPT-001', title: 'Passenger was aggressive', reportTime: '2026-02-26 10:30', user: 'driver1@email.com', type: 'TRIP', category: 'Passenger Behavior', status: 'PENDING' },
+
   { id: 'RPT-002', title: 'App crashed', reportTime: '2026-02-25 14:10', user: 'driver@email.com', type: 'SYSTEM', category: 'App Crash', status: 'REJECTED' },
-  { id: 'RPT-003', title: 'Wrong fare', reportTime: '2026-02-24 09:00', user: 'user2@email.com', type: 'TRIP', category: 'Payment Issue', status: 'RESOLVED' },
-  { id: 'RPT-004', title: 'Vehicle not clean', reportTime: '2026-02-23 11:45', user: 'user3@email.com', type: 'TRIP', category: 'Vehicle Condition', status: 'PENDING' },
-  { id: 'RPT-005', title: 'Late arrival', reportTime: '2026-02-22 16:30', user: 'user4@email.com', type: 'TRIP', category: 'Timing Issue', status: 'PENDING' },
+
+  { id: 'RPT-003', title: 'Minor collision during trip', reportTime: '2026-02-24 09:00', user: 'driver2@email.com', type: 'TRIP', category: 'Accident', status: 'RESOLVED' },
+
+  { id: 'RPT-004', title: 'Passenger damaged vehicle interior', reportTime: '2026-02-23 11:45', user: 'driver3@email.com', type: 'TRIP', category: 'Passenger Behavior', status: 'PENDING' },
+
+  { id: 'RPT-005', title: 'Unexpected issue during trip', reportTime: '2026-02-22 16:30', user: 'driver4@email.com', type: 'TRIP', category: 'Other', status: 'PENDING' },
+
   { id: 'RPT-006', title: 'App freezing', reportTime: '2026-02-21 13:15', user: 'driver@email.com', type: 'SYSTEM', category: 'Performance Issue', status: 'REJECTED' },
-  { id: 'RPT-007', title: 'Poor service', reportTime: '2026-02-20 11:00', user: 'user5@email.com', type: 'TRIP', category: 'Service Quality', status: 'PENDING' },
+
+  { id: 'RPT-007', title: 'Passenger refused to pay cash fee', reportTime: '2026-02-20 11:00', user: 'driver5@email.com', type: 'TRIP', category: 'Passenger Behavior', status: 'PENDING' },
+
   { id: 'RPT-008', title: 'App not loading', reportTime: '2026-02-19 15:45', user: 'driver@email.com', type: 'SYSTEM', category: 'App Loading Issue', status: 'REJECTED' },
-  { id: 'RPT-009', title: 'Wrong pickup location', reportTime: '2026-02-18 14:30', user: 'user6@email.com', type: 'TRIP', category: 'Location Issue', status: 'RESOLVED' },
-  { id: 'RPT-010', title: 'Driver was late', reportTime: '2026-02-17 10:20', user: 'user7@email.com', type: 'TRIP', category: 'Timing Issue', status: 'PENDING' },
-  { id: 'RPT-011', title: 'Driver was rude', reportTime: '2026-02-26 10:30', user: 'user1@email.com', type: 'TRIP', category: 'Driver Behavior', status: 'PENDING' },
+
+  { id: 'RPT-009', title: 'Vehicle involved in minor accident', reportTime: '2026-02-18 14:30', user: 'driver6@email.com', type: 'TRIP', category: 'Accident', status: 'RESOLVED' },
+
+  { id: 'RPT-010', title: 'Unusual trip issue reported', reportTime: '2026-02-17 10:20', user: 'driver7@email.com', type: 'TRIP', category: 'Other', status: 'PENDING' },
+
+  { id: 'RPT-011', title: 'Passenger was verbally abusive', reportTime: '2026-02-26 10:30', user: 'driver1@email.com', type: 'TRIP', category: 'Passenger Behavior', status: 'PENDING' },
+
   { id: 'RPT-012', title: 'App crashed', reportTime: '2026-02-25 14:10', user: 'driver@email.com', type: 'SYSTEM', category: 'App Crash', status: 'REJECTED' },
-  { id: 'RPT-013', title: 'Wrong fare', reportTime: '2026-02-24 09:00', user: 'user2@email.com', type: 'TRIP', category: 'Payment Issue', status: 'RESOLVED' },
-  { id: 'RPT-014', title: 'Driver was rude', reportTime: '2026-02-26 10:30', user: 'user1@email.com', type: 'TRIP', category: 'Driver Behavior', status: 'PENDING' },
+
+  { id: 'RPT-013', title: 'Small road accident occurred', reportTime: '2026-02-24 09:00', user: 'driver2@email.com', type: 'TRIP', category: 'Accident', status: 'RESOLVED' },
+
+  { id: 'RPT-014', title: 'Passenger refused to follow safety rules', reportTime: '2026-02-26 10:30', user: 'driver1@email.com', type: 'TRIP', category: 'Passenger Behavior', status: 'PENDING' },
+
   { id: 'RPT-015', title: 'App crashed', reportTime: '2026-02-25 14:10', user: 'driver@email.com', type: 'SYSTEM', category: 'App Crash', status: 'REJECTED' },
-  { id: 'RPT-016', title: 'Wrong fare', reportTime: '2026-02-24 09:00', user: 'user2@email.com', type: 'TRIP', category: 'Payment Issue', status: 'RESOLVED' }
+
+  { id: 'RPT-016', title: 'Other issue during trip', reportTime: '2026-02-24 09:00', user: 'driver2@email.com', type: 'TRIP', category: 'Other', status: 'RESOLVED' }
 ])
 
 const filters = ['ALL', 'PENDING', 'REJECTED', 'RESOLVED']
