@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "ReportType" AS ENUM ('ACCIDENT', 'PASSENGER_BEHAVIOR', 'OTHER');
+CREATE TYPE "ReportType" AS ENUM ('ACCIDENT', 'PASSENGER_BEHAVIOR', 'APPLICATION_PROBLEM', 'MAP_PROBLEM', 'SYSTEM_SLOW', 'OTHER');
 
 -- CreateEnum
 CREATE TYPE "ReportCategory" AS ENUM ('SYSTEM', 'TRIP');
@@ -13,7 +13,7 @@ CREATE TABLE "Report" (
     "reporterId" TEXT NOT NULL,
     "targetUserId" TEXT,
     "routeId" TEXT,
-    "type" "ReportType",
+    "type" "ReportType" NOT NULL,
     "category" "ReportCategory" NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
