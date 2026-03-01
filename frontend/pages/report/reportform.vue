@@ -171,9 +171,10 @@
         <button
         type="button"
         class="px-6 py-2 bg-red-600 text-white rounded hover:bg-red"
+        :disabled="isSubmitting"
         @click="submitForm"
         >
-        ส่ง
+        {{ isSubmitting ? 'กำลังส่ง...' : 'ส่งรายงาน' }}
         </button>
       </div>
 
@@ -229,6 +230,7 @@
 import { reactive,ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
+const { $api } = useNuxtApp()
 const reports = useReports()
 const router = useRouter()
 const route = useRoute()
@@ -255,34 +257,57 @@ const resetForm = () => {
   activeUpload.value = null
 }
 
-const submitForm = () => {
+const isSubmitting = ref(false)
+
+const submitForm = async () => {
   if (!form.title || !form.detail || !form.tag) {
     alert('กรุณากรอกข้อมูลให้ครบ')
     return
   }
 
-  reports.value.push({
-    id: Date.now(),
-    title: form.title,
-    description: form.detail,
-    category: form.category,
-    tag: form.tag,
-    images: form.images,   
-    videos: form.videos,
-    audios: form.audios,
-    passengerId: passengerId,
-    routeId: routeId,
-    createdAt: new Date(),
-    updatedAt: null,
-    status: 'ส่งรายงานปัญหาแล้ว',
-    adminMessage: ''
-  })
+  if (form.category === 'trip' && !routeId) {
+    alert('ไม่พบข้อมูลเส้นทาง กรุณาเข้าหน้านี้จากหน้ารายการเดินทาง')
+    return
+  }
 
-  alert('ส่งรายงานปัญหาสำเร็จ ขอบคุณสำหรับการรายงานปัญหาของคุณ')
+  isSubmitting.value = true
 
-  resetForm()
+  try {
+    const categoryMap = { system: 'SYSTEM', trip: 'TRIP' }
+    const typeMap = {
+    'แอปพลิเคชันขัดข้อง': 'APPLICATION_PROBLEM',  
+    'แผนที่ขัดข้อง': 'MAP_PROBLEM',                
+    'ระบบทำงานล่าช้า': 'SYSTEM_SLOW',              
+    'อุบัติเหตุ': 'ACCIDENT',
+    'พฤติกรรมผู้โดยสาร': 'PASSENGER_BEHAVIOR',
+    'อื่น ๆ': 'OTHER'
+    }
 
-  router.push('/')
+    const formData = new FormData()
+    formData.append('title', form.title)
+    formData.append('description', form.detail)
+    formData.append('category', categoryMap[form.category])
+    formData.append('type', typeMap[form.tag])
+
+    if (routeId) formData.append('routeId', routeId)
+    if (passengerId) formData.append('targetUserId', passengerId)
+
+    form.images.forEach(item => formData.append('images', item.file))
+    form.videos.forEach(item => formData.append('videos', item.file))
+    form.audios.forEach(item => formData.append('audios', item.file))
+
+    const res = await $api('/reports', {
+      method: 'POST',
+      body: formData
+    })
+      alert('ส่งรายงานปัญหาสำเร็จ ✓')
+      resetForm()
+      router.push('/')
+  } catch (err) {
+    alert('ส่งรายงานไม่สำเร็จ\n' + (err.data?.message || err.message || 'กรุณาลองใหม่'))
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 const categoryButton = (type) => {

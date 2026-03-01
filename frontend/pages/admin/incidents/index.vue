@@ -11,37 +11,42 @@
         </div>
 
         <!-- Summary Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div class="bg-white p-4 rounded-xl border shadow-sm">
             <p class="text-xs text-gray-500 uppercase">Total Reports</p>
             <p class="text-2xl font-semibold text-gray-800">{{ totalCount }}</p>
           </div>
-      
           <div class="bg-white p-4 rounded-xl border shadow-sm">
-            <p class="text-xs text-gray-500 uppercase">Pending</p>
+            <p class="text-xs text-gray-500 uppercase">In Progress</p>
             <p class="text-2xl font-semibold text-yellow-600">{{ inProgressCount }}</p>
           </div>
           <div class="bg-white p-4 rounded-xl border shadow-sm">
-            <p class="text-xs text-gray-500 uppercase">RESOLVED</p>
+            <p class="text-xs text-gray-500 uppercase">Resolved</p>
             <p class="text-2xl font-semibold text-green-600">{{ resolvedCount }}</p>
           </div>
         </div>
 
         <!-- Controls -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <input v-model="searchQuery" type="text" placeholder="Search by title, ID, user..."
+          <input v-model="searchQuery" type="text" placeholder="Search by title..."
             class="px-4 py-2 border rounded-xl text-sm w-full md:w-80 focus:ring-2 focus:ring-blue-500 outline-none" />
           <div class="flex gap-2 flex-wrap">
-            <button v-for="status in filters" :key="status" @click="setFilter(status)"
+            <button v-for="f in filters" :key="f.value" @click="setFilter(f.value)"
               class="px-4 py-2 text-xs font-medium rounded-full border transition"
-              :class="currentFilter === status ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 hover:bg-gray-100'">
-              {{ status }}
+              :class="currentFilter === f.value ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 hover:bg-gray-100'">
+              {{ f.label }}
             </button>
           </div>
         </div>
 
+        <!-- Loading -->
+        <div v-if="pending" class="text-center py-12 text-gray-400">กำลังโหลดข้อมูล...</div>
+
+        <!-- Error -->
+        <div v-else-if="error" class="text-center py-12 text-red-500">เกิดข้อผิดพลาด: {{ error.message }}</div>
+
         <!-- Table -->
-        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
+        <div v-else class="bg-white rounded-2xl shadow-sm border overflow-hidden">
           <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
               <thead class="bg-gray-100 text-xs uppercase text-gray-500">
@@ -53,16 +58,9 @@
                       <span v-else class="text-blue-600">▼</span>
                     </div>
                   </th>
-                  <th class="px-6 py-4 text-left cursor-pointer select-none" @click="sortBy('reportTime')">
+                  <th class="px-6 py-4 text-left cursor-pointer select-none" @click="sortBy('createdAt')">
                     <div class="flex items-center gap-1">Reported Time
-                      <span v-if="sortKey !== 'reportTime'" class="text-gray-300">⇅</span>
-                      <span v-else-if="sortAsc" class="text-blue-600">▲</span>
-                      <span v-else class="text-blue-600">▼</span>
-                    </div>
-                  </th>
-                  <th class="px-6 py-4 text-left cursor-pointer select-none" @click="sortBy('user')">
-                    <div class="flex items-center gap-1">User
-                      <span v-if="sortKey !== 'user'" class="text-gray-300">⇅</span>
+                      <span v-if="sortKey !== 'createdAt'" class="text-gray-300">⇅</span>
                       <span v-else-if="sortAsc" class="text-blue-600">▲</span>
                       <span v-else class="text-blue-600">▼</span>
                     </div>
@@ -92,24 +90,24 @@
               </thead>
 
               <tbody v-if="paginatedIncidents.length">
-                <tr v-for="item in paginatedIncidents" :key="item.id" @click="goToDetail(item)"
+                <tr v-for="item in paginatedIncidents" :key="item.id"
+                  @click="goToDetail(item)"
                   class="border-t hover:bg-blue-50 transition cursor-pointer">
                   <td class="px-6 py-4">
                     <div class="font-medium text-blue-600">{{ item.title }}</div>
                     <div class="text-xs text-gray-400">{{ item.id }}</div>
                   </td>
-                  <td class="px-6 py-4 text-gray-600">{{ item.reportTime }}</td>
-                  <td class="px-6 py-4 text-gray-700">{{ item.user }}</td>
+                  <td class="px-6 py-4 text-gray-600">{{ formatDate(item.createdAt) }}</td>
                   <td class="px-6 py-4">
                     <span class="px-3 py-1 text-xs font-medium rounded-full"
                       :class="item.type === 'TRIP' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'">
-                      {{ item.type }}
+                      {{ item.type ?? '-' }}
                     </span>
                   </td>
-                  <td class="px-6 py-4 text-gray-600">{{ item.category }}</td>
+                  <td class="px-6 py-4 text-gray-600">{{ categoryLabel(item.category) }}</td>
                   <td class="px-6 py-4">
                     <span class="px-3 py-1 text-xs font-semibold rounded-full" :class="statusClass(item.status)">
-                      {{ item.status }}
+                      {{ statusLabel(item.status) }}
                     </span>
                   </td>
                 </tr>
@@ -117,7 +115,7 @@
 
               <tbody v-else>
                 <tr>
-                  <td colspan="6" class="text-center py-12 text-gray-400">No incidents found</td>
+                  <td colspan="5" class="text-center py-12 text-gray-400">No incidents found</td>
                 </tr>
               </tbody>
             </table>
@@ -146,55 +144,33 @@ import AdminSidebar from '~/components/admin/AdminSidebar.vue'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 useHead({
-  link: [
-    { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css' }
-  ]
+  link: [{ rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css' }]
 })
 
-const goToDetail = async (item) => {
-  if (item.type === 'TRIP') {
-    await navigateTo(`/admin/incidents/trip/${item.id}`)
-  } else {
-    await navigateTo(`/admin/incidents/system/${item.id}`)
-  }
-}
+definePageMeta({ middleware: 'auth' })
+
+const { $api } = useNuxtApp()
 
 
-const incidents = ref([
-  { id: 'RPT-001', title: 'Passenger was aggressive', reportTime: '2026-02-26 10:30', user: 'driver1@email.com', type: 'TRIP', category: 'Passenger Behavior', status: 'PENDING' },
+const { data: reportData, pending, error } = await useAsyncData('admin-reports', async () => {
+  const res = await $api('reports/admin', {
+    params: { limit: 100 }
+  })
 
-  { id: 'RPT-002', title: 'App crashed', reportTime: '2026-02-25 14:10', user: 'driver@email.com', type: 'SYSTEM', category: 'App Crash', status: 'REJECTED' },
+  return Array.isArray(res) ? res : []
+})
 
-  { id: 'RPT-003', title: 'Minor collision during trip', reportTime: '2026-02-24 09:00', user: 'driver2@email.com', type: 'TRIP', category: 'Accident', status: 'RESOLVED' },
+const incidents = computed(() => reportData.value ?? [])
 
-  { id: 'RPT-004', title: 'Passenger damaged vehicle interior', reportTime: '2026-02-23 11:45', user: 'driver3@email.com', type: 'TRIP', category: 'Passenger Behavior', status: 'PENDING' },
 
-  { id: 'RPT-005', title: 'Unexpected issue during trip', reportTime: '2026-02-22 16:30', user: 'driver4@email.com', type: 'TRIP', category: 'Other', status: 'PENDING' },
+const filters = [
+  { label: 'ALL',         value: 'ALL' },
+  { label: 'Received',    value: 'RECEIVED' },
+  { label: 'In Progress', value: 'IN_PROGRESS' },
+  { label: 'Resolved',    value: 'RESOLVED' },
+  { label: 'Rejected',    value: 'REJECTED' },
+]
 
-  { id: 'RPT-006', title: 'App freezing', reportTime: '2026-02-21 13:15', user: 'driver@email.com', type: 'SYSTEM', category: 'Performance Issue', status: 'REJECTED' },
-
-  { id: 'RPT-007', title: 'Passenger refused to pay cash fee', reportTime: '2026-02-20 11:00', user: 'driver5@email.com', type: 'TRIP', category: 'Passenger Behavior', status: 'PENDING' },
-
-  { id: 'RPT-008', title: 'App not loading', reportTime: '2026-02-19 15:45', user: 'driver@email.com', type: 'SYSTEM', category: 'App Loading Issue', status: 'REJECTED' },
-
-  { id: 'RPT-009', title: 'Vehicle involved in minor accident', reportTime: '2026-02-18 14:30', user: 'driver6@email.com', type: 'TRIP', category: 'Accident', status: 'RESOLVED' },
-
-  { id: 'RPT-010', title: 'Unusual trip issue reported', reportTime: '2026-02-17 10:20', user: 'driver7@email.com', type: 'TRIP', category: 'Other', status: 'PENDING' },
-
-  { id: 'RPT-011', title: 'Passenger was verbally abusive', reportTime: '2026-02-26 10:30', user: 'driver1@email.com', type: 'TRIP', category: 'Passenger Behavior', status: 'PENDING' },
-
-  { id: 'RPT-012', title: 'App crashed', reportTime: '2026-02-25 14:10', user: 'driver@email.com', type: 'SYSTEM', category: 'App Crash', status: 'REJECTED' },
-
-  { id: 'RPT-013', title: 'Small road accident occurred', reportTime: '2026-02-24 09:00', user: 'driver2@email.com', type: 'TRIP', category: 'Accident', status: 'RESOLVED' },
-
-  { id: 'RPT-014', title: 'Passenger refused to follow safety rules', reportTime: '2026-02-26 10:30', user: 'driver1@email.com', type: 'TRIP', category: 'Passenger Behavior', status: 'PENDING' },
-
-  { id: 'RPT-015', title: 'App crashed', reportTime: '2026-02-25 14:10', user: 'driver@email.com', type: 'SYSTEM', category: 'App Crash', status: 'REJECTED' },
-
-  { id: 'RPT-016', title: 'Other issue during trip', reportTime: '2026-02-24 09:00', user: 'driver2@email.com', type: 'TRIP', category: 'Other', status: 'RESOLVED' }
-])
-
-const filters = ['ALL', 'PENDING', 'REJECTED', 'RESOLVED']
 const currentFilter = ref('ALL')
 const searchQuery = ref('')
 const sortKey = ref(null)
@@ -214,7 +190,7 @@ const filteredIncidents = computed(() => {
   if (currentFilter.value !== 'ALL') data = data.filter(i => i.status === currentFilter.value)
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
-    data = data.filter(i => i.title.toLowerCase().includes(q) || i.id.toLowerCase().includes(q) || i.user.toLowerCase().includes(q))
+    data = data.filter(i => i.title?.toLowerCase().includes(q) || i.id?.toLowerCase().includes(q))
   }
   if (sortKey.value) {
     data = [...data].sort((a, b) => {
@@ -227,7 +203,7 @@ const filteredIncidents = computed(() => {
   return data
 })
 
-const totalPages = computed(() => Math.ceil(filteredIncidents.value.length / itemsPerPage))
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredIncidents.value.length / itemsPerPage)))
 const paginatedIncidents = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage
   return filteredIncidents.value.slice(start, start + itemsPerPage)
@@ -236,21 +212,36 @@ const paginatedIncidents = computed(() => {
 const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
 const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
 
-const statusClass = (status) => {
-  switch (status) {
-    case 'PENDING': return 'bg-yellow-100 text-yellow-700'
-    case 'REJECTED': return 'bg-red-100 text-red-700'
-    case 'RESOLVED': return 'bg-green-100 text-green-700'
-    default: return 'bg-gray-100 text-gray-600'
-  }
-}
-
 const totalCount = computed(() => incidents.value.length)
-const openCount = computed(() => incidents.value.filter(i => i.status === 'PENDING').length)
-const inProgressCount = computed(() => incidents.value.filter(i => i.status === 'IN_PROGRESS' || i.status === 'REJECTED').length)
+const inProgressCount = computed(() => incidents.value.filter(i => i.status === 'IN_PROGRESS').length)
 const resolvedCount = computed(() => incidents.value.filter(i => i.status === 'RESOLVED').length)
 
-// ✅ sidebar toggle logic เหมือนหน้าอื่น
+const statusLabel = (status) => ({
+  'RECEIVED':    'Received',
+  'IN_PROGRESS': 'In Progress',
+  'RESOLVED':    'Resolved',
+  'REJECTED':    'Rejected',
+})[status] ?? status
+
+const categoryLabel = (cat) => ({
+  'TRIP':    'Trip',
+  'SERVICE': 'Service',
+  'OTHER':   'Other',
+})[cat] ?? cat ?? '-'
+
+const statusClass = (status) => ({
+  'RECEIVED':    'bg-orange-100 text-orange-700',
+  'IN_PROGRESS': 'bg-yellow-100 text-yellow-700',
+  'RESOLVED':    'bg-green-100 text-green-700',
+  'REJECTED':    'bg-red-100 text-red-700',
+})[status] ?? 'bg-gray-100 text-gray-600'
+
+const formatDate = (date) => {
+  if (!date) return '-'
+  return new Date(date).toLocaleString('th-TH')
+}
+
+// Sidebar logic
 function defineGlobalScripts() {
   window.toggleSidebar = function () {
     const sidebar = document.getElementById('sidebar')
@@ -272,17 +263,6 @@ function defineGlobalScripts() {
     if (!sidebar || !overlay) return
     sidebar.classList.toggle('mobile-open')
     overlay.classList.toggle('hidden')
-  }
-  window.toggleSubmenu = function (menuId) {
-    const menu = document.getElementById(menuId)
-    const icon = document.getElementById(menuId + '-icon')
-    if (!menu || !icon) return
-    menu.classList.toggle('hidden')
-    if (menu.classList.contains('hidden')) {
-      icon.classList.replace('fa-chevron-up', 'fa-chevron-down')
-    } else {
-      icon.classList.replace('fa-chevron-down', 'fa-chevron-up')
-    }
   }
   window.__adminResizeHandler__ = function () {
     const sidebar = document.getElementById('sidebar')
@@ -308,21 +288,25 @@ function cleanupGlobalScripts() {
   delete window.__adminResizeHandler__
 }
 
+const goToDetail = (item) => {
+  const path = item.category === 'TRIP'
+    ? `/admin/incidents/trip/${item.id}`
+    : `/admin/incidents/system/${item.id}`
+  navigateTo(path)
+}
+
 onMounted(() => {
   defineGlobalScripts()
   if (typeof window.__adminResizeHandler__ === 'function') window.__adminResizeHandler__()
 })
 
-onUnmounted(() => {
-  cleanupGlobalScripts()
-})
+onUnmounted(() => { cleanupGlobalScripts() })
 </script>
 
 <style>
 .sidebar { transition: width 0.3s ease; }
 .sidebar.collapsed { width: 80px; }
 .sidebar:not(.collapsed) { width: 280px; }
-.sidebar-item { transition: all 0.3s ease; }
 .sidebar.collapsed .sidebar-text { display: none; }
 .sidebar.collapsed .sidebar-item { justify-content: center; }
 .main-content { transition: margin-left 0.3s ease; }
