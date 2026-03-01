@@ -255,35 +255,53 @@ const resetForm = () => {
   activeUpload.value = null
 }
 
-const submitForm = () => {
+const submitForm = async () => {
   if (!form.title || !form.detail || !form.tag) {
-    alert('กรุณากรอกข้อมูลให้ครบ')
-    return
+    alert('กรุณากรอกข้อมูลให้ครบ');
+    return;
   }
 
-  reports.value.push({
-    id: Date.now(),
+  const mediaPayload = [
+    ...form.images.map(img => ({ url: img.url, type: 'IMAGE', fileName: img.name })),
+    ...form.videos.map(vid => ({ url: vid.url, type: 'VIDEO', fileName: vid.name })),
+    ...form.audios.map(aud => ({ url: aud.url, type: 'AUDIO', fileName: aud.name }))
+  ];
+
+  const payload = {
     title: form.title,
-    description: form.detail,
-    category: form.category,
-    tag: form.tag,
-    images: form.images,   
-    videos: form.videos,
-    audios: form.audios,
-    passengerId: passengerId,
+    description: form.detail, 
+    category: form.category.toUpperCase(), 
+    type: mapTagToTypeEnum(form.tag), 
+    media: mediaPayload,
     routeId: routeId,
-    createdAt: new Date(),
-    updatedAt: null,
-    status: 'ส่งรายงานปัญหาแล้ว',
-    adminMessage: ''
+    targetUserId: passengerId
+  };
+
+  try {
+  const response = await $fetch('/api/reports', {
+    method: 'POST',
+    body: payload
   })
-
-  alert('ส่งรายงานปัญหาสำเร็จ ขอบคุณสำหรับการรายงานปัญหาของคุณ')
-
+  alert('ส่งรายงานปัญหาสำเร็จ...')
   resetForm()
-
-  router.push('/')
+  router.push('/profile/report-history') 
+} catch (err) {
+  console.error(err)
+  alert('เกิดข้อผิดพลาดในการส่งรายงาน: ' + err.message)
 }
+};
+
+const mapTagToTypeEnum = (tag) => {
+  const map = {
+    'แอปพลิเคชันขัดข้อง': 'APP_CRASH',
+    'แผนที่ขัดข้อง': 'MAP_ERROR',
+    'ระบบทำงานล่าช้า': 'SYSTEM_LAG',
+    'อุบัติเหตุ': 'ACCIDENT',
+    'พฤติกรรมผู้โดยสาร': 'PASSENGER_BEHAVIOR',
+    'อื่น ๆ': 'OTHER'
+  };
+  return map[tag] || 'OTHER';
+};
 
 const categoryButton = (type) => {
   return form.category === type

@@ -13,7 +13,7 @@ const createReport = asyncHandler(async (req, res) => {
   });
 });
 
-const getReport = asyncHandler(async (req, res) => {
+const getReportById = asyncHandler(async (req, res) => {
   const userId = req.user.sub;
   const role = req.user.role;
 
@@ -75,7 +75,7 @@ const deleteReport = asyncHandler(async (req, res) => {
 
 module.exports = {
   createReport,
-  getReport,
+  getReportById,
   getReports,
   updateReport,
   deleteReport,

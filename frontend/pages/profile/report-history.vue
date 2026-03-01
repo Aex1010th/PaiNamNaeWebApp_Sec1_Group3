@@ -58,7 +58,7 @@
               class="px-3 py-1 text-xs text-white rounded-full"
               :class="statusColor(report.status)"
             >
-              {{ report.status }}
+              {{ getStatusLabel(report.status) }}
             </span>
           </div>
 
@@ -79,7 +79,8 @@ definePageMeta({
   middleware: 'auth'
 })
 
-const reports = useState('reports', () => [])
+const { data: reportResponse, pending } = await useFetch('/api/reports/me')
+const reports = computed(() => reportResponse.value?.data || [])
 
 const formatDate = (date) => {
   if (!date) return '-'
@@ -88,16 +89,21 @@ const formatDate = (date) => {
 
 const statusColor = (status) => {
   switch (status) {
-    case 'ส่งรายงานปัญหาแล้ว':
-      return 'bg-orange-400'
-    case 'แอดมินรับเรื่อง':
-      return 'bg-yellow-500'
-    case 'กำลังดำเนินการ':
-      return 'bg-blue-500'
-    case 'เสร็จสิ้น':
-      return 'bg-green-600'
-    default:
-      return 'bg-gray-400'
+    case 'RECEIVED':     return 'bg-orange-400' 
+    case 'IN_PROGRESS':  return 'bg-blue-500'   
+    case 'RESOLVED':     return 'bg-green-600'  
+    case 'REJECTED':     return 'bg-red-500'    
+    default:             return 'bg-gray-400'
   }
+}
+
+const getStatusLabel = (status) => {
+  const labels = {
+    'RECEIVED': 'ส่งรายงานปัญหาแล้ว',
+    'IN_PROGRESS': 'กำลังดำเนินการ',
+    'RESOLVED': 'เสร็จสิ้น',
+    'REJECTED': 'ปฏิเสธ/ไม่รับเรื่อง'
+  }
+  return labels[status] || status
 }
 </script>
