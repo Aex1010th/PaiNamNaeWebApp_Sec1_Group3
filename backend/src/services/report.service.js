@@ -6,6 +6,13 @@ const LIST_SELECT = {
 	id: true,
 	reporterId: true,
 	targetUserId: true,
+	targetUser: {
+		select: {
+			id: true,
+			firstName: true,
+			lastName: true,
+		},
+	},
 	routeId: true,
 	type: true,
 	category: true,
@@ -70,8 +77,8 @@ const ensureRelatedEntities = async ({ routeId, targetUserId }) => {
 };
 
 const validateConditionalFields = ({ category, type, routeId, targetUserId }) => {
-	if (category === ReportCategory.TRIP && !routeId) {
-		throw new ApiError(400, 'routeId is required when category is TRIP');
+	if (category === ReportCategory.TRIP && type !== ReportType.PASSENGER_BEHAVIOR && !routeId) {
+		throw new ApiError(400, 'routeId is required for TRIP reports except PASSENGER_BEHAVIOR');
 	}
 
 	if (type === ReportType.PASSENGER_BEHAVIOR && !targetUserId) {
