@@ -1,10 +1,42 @@
 const asyncHandler = require('express-async-handler');
 const reportService = require('../services/report.service');
+const upload = require('../middlewares/upload.middleware');
 
 const createReport = asyncHandler(async (req, res) => {
   const userId = req.user.sub;
 
-  const report = await reportService.createReport(req.body, userId);
+  const uploadedMedia = [
+    ...(req.files?.images || []).map(f => ({
+      url: f.path,
+      type: 'IMAGE',
+      mimeType: f.mimetype,
+      fileName: f.originalname,
+      size: f.size,
+    })),
+    ...(req.files?.videos || []).map(f => ({
+      url: f.path,
+      type: 'VIDEO',
+      mimeType: f.mimetype,
+      fileName: f.originalname,
+      size: f.size,
+    })),
+    ...(req.files?.audios || []).map(f => ({
+      url: f.path,
+      type: 'AUDIO',
+      mimeType: f.mimetype,
+      fileName: f.originalname,
+      size: f.size,
+    })),
+  ];
+
+  const bodyMedia = req.body.media
+    ? (typeof req.body.media === 'string' ? JSON.parse(req.body.media) : req.body.media)
+    : [];
+
+  const report = await reportService.createReport(
+    { ...req.body, media: [...bodyMedia, ...uploadedMedia] },
+    userId
+  );
 
   res.status(201).json({
     success: true,
@@ -13,7 +45,7 @@ const createReport = asyncHandler(async (req, res) => {
   });
 });
 
-const getReport = asyncHandler(async (req, res) => {
+const getReportById = asyncHandler(async (req, res) => {
   const userId = req.user.sub;
   const role = req.user.role;
 
@@ -30,6 +62,7 @@ const getReport = asyncHandler(async (req, res) => {
 });
 
 const getReports = asyncHandler(async (req, res) => {
+  console.log('req.user:', req.user)  // ดูตรงนี้ก่อน
   const userId = req.user.sub;
   const role = req.user.role;
 
@@ -75,7 +108,7 @@ const deleteReport = asyncHandler(async (req, res) => {
 
 module.exports = {
   createReport,
-  getReport,
+  getReportById,
   getReports,
   updateReport,
   deleteReport,

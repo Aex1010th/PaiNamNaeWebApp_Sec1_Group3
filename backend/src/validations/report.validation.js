@@ -65,14 +65,7 @@ const updateReportSchema = z
 	.refine((data) => Object.keys(data).length > 0, {
 		message: 'At least one field is required to update report',
 	})
-	.refine((data) => !(data.category === ReportCategory.TRIP && !data.routeId), {
-		message: 'routeId is required when category is TRIP',
-		path: ['routeId'],
-	})
-	.refine((data) => !(data.type === ReportType.PASSENGER_BEHAVIOR && !data.targetUserId), {
-		message: 'targetUserId is required for PASSENGER_BEHAVIOR reports',
-		path: ['targetUserId'],
-	});
+	
 
 const reportIdParamSchema = z.object({
 	id: z.string().cuid('Invalid report ID format'),

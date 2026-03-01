@@ -1,63 +1,72 @@
-import express from 'express';
-import { route } from './user.routes';
-import upload from '../middlewares/upload.middleware';
-const { protect, requireAdmin } = require('../middlewares/auth');
+const express = require('express');
 const validate = require('../middlewares/validate');
+const { protect, requireAdmin } = require('../middlewares/auth');
+const reportController = require('../controllers/report.controller');
 const router = express.Router();
+const upload = require('../middlewares/upload.middleware');
+const {
+  reportIdParamSchema,
+  createReportSchema,
+  updateReportSchema,
+  getReportsQuerySchema,
+} = require('../validations/report.validation');
 
-// Get all reports (
+// Get all reports 
 router.get(
     '/admin',
     protect,
     requireAdmin,
-    validate({ query: listReportsQuerySchema }),
-    reportController.admin.ListReports
+    validate({ query: getReportsQuerySchema }),
+    reportController.getReports
 );
 
+//ADMIN
 // Get report by ID
 router.get(
     '/admin/:id',
     protect,
     requireAdmin,
-    validate({ params: reportIdschema }),
-    reportController.admin.GetReportById
+    validate({ params: reportIdParamSchema }),
+    reportController.getReportById
 );
 
 // Admin update report status
 router.patch(
-    '/admin/:id/status',
+    '/admin/:id',
     protect,
     requireAdmin,
-    validate({ params: reportIdschema, body: updateReportStatusSchema }),
-    reportController.admin.UpdateReportStatus
+    validate({ params: reportIdParamSchema, body: updateReportSchema }),
+    reportController.updateReport
 );
 
+//USER
 // User get All reports
 router.get(
     '/me',
     protect,
-    validate({ query: listMyReportsQuerySchema }),
-    reportController.getMyReports
+    validate({ query: getReportsQuerySchema }),
+    reportController.getReports
 );
 
 // User get report by ID
 router.get(
     '/me/:id',
     protect,
-    validate({ params: reportIdschema }),
-    reportController.getMyReportById
+    validate({ params: reportIdParamSchema }),
+    reportController.getReportById
 );
 
-route.post(
-    '/',
-    protect,
-    upload.fields([
-    { name: 'images' },
-    { name: 'videos' },
-    { name: 'audios' }
+// Create a new report
+router.post(
+  '/',
+  protect,
+  upload.fields([
+    { name: 'images'},
+    { name: 'videos'},
+    { name: 'audios'}
   ]),
-    validate({ body: createReportSchema }),
-    reportController.createReport
+  validate({ body: createReportSchema }),
+  reportController.createReport
 );
 
 module.exports = router;
