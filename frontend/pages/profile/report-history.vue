@@ -35,6 +35,12 @@
             <div class="mt-1 text-sm text-gray-500">
               รายงานเมื่อ {{ formatDate(report.createdAt) }}
             </div>
+            <div
+              v-if="report.targetUserId"
+              class="mt-1 text-sm text-gray-600"
+            >
+              ผู้ถูกรายงาน: {{ targetUserName(report) }}
+            </div>
           </NuxtLink>
         </div>
       </main>
@@ -58,6 +64,13 @@ const { data: apiResponse, pending, error } = await useAsyncData('user-reports',
 })
 
 const reports = computed(() => apiResponse.value ?? [])
+
+const targetUserName = (report) => {
+  const firstName = report?.targetUser?.firstName || ''
+  const lastName = report?.targetUser?.lastName || ''
+  const fullName = `${firstName} ${lastName}`.trim()
+  return fullName || 'ไม่ระบุชื่อ'
+}
 
 const formatDate = (date) => {
   if (!date) return '-'

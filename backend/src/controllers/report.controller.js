@@ -1,40 +1,46 @@
 const asyncHandler = require('express-async-handler');
 const reportService = require('../services/report.service');
-const upload = require('../middlewares/upload.middleware');
+const ApiError = require('../utils/ApiError');
+const { uploadToCloudinary } = require('../utils/cloudinary');
 
 const createReport = asyncHandler(async (req, res) => {
   const userId = req.user.sub;
-
-  const uploadedMedia = [
-    ...(req.files?.images || []).map(f => ({
-      url: f.path,
-      type: 'IMAGE',
-      mimeType: f.mimetype,
-      fileName: f.originalname,
-      size: f.size,
-    })),
-    ...(req.files?.videos || []).map(f => ({
-      url: f.path,
-      type: 'VIDEO',
-      mimeType: f.mimetype,
-      fileName: f.originalname,
-      size: f.size,
-    })),
-    ...(req.files?.audios || []).map(f => ({
-      url: f.path,
-      type: 'AUDIO',
-      mimeType: f.mimetype,
-      fileName: f.originalname,
-      size: f.size,
-    })),
-  ];
 
   const bodyMedia = req.body.media
     ? (typeof req.body.media === 'string' ? JSON.parse(req.body.media) : req.body.media)
     : [];
 
+  const files = [
+    ...(req.files?.images || []),
+    ...(req.files?.videos || []),
+    ...(req.files?.audios || []),
+  ];
+
+  if ((bodyMedia?.length || 0) + files.length > 3) {
+    throw new ApiError(400, 'media can contain at most 3 files');
+  }
+
+  const uploaded = await Promise.all(
+    files.map(async (file) => {
+      const result = await uploadToCloudinary(file.buffer, 'painamnae/reports');
+
+      let mediaType = 'FILE';
+      if (file.mimetype.startsWith('image/')) mediaType = 'IMAGE';
+      else if (file.mimetype.startsWith('audio/')) mediaType = 'AUDIO';
+      else if (file.mimetype === 'video/mp4') mediaType = 'VIDEO';
+
+      return {
+        url: result.url,
+        type: mediaType,
+        mimeType: file.mimetype,
+        fileName: file.originalname,
+        size: file.size,
+      };
+    })
+  );
+
   const report = await reportService.createReport(
-    { ...req.body, media: [...bodyMedia, ...uploadedMedia] },
+    { ...req.body, media: [...(bodyMedia || []), ...uploaded] },
     userId
   );
 

@@ -71,11 +71,17 @@
           <!-- Trip -->
           <template v-else>
             <option>อุบัติเหตุ</option>
-            <option>พฤติกรรมผู้โดยสาร</option>
+            <option :disabled="!hasTargetPassenger">พฤติกรรมผู้โดยสาร</option>
             <option>อื่น ๆ</option>
           </template>
 
         </select>
+        <p
+          v-if="form.category === 'trip' && !hasTargetPassenger"
+          class="mt-2 text-sm text-amber-600"
+        >
+          หากต้องการรายงานพฤติกรรมผู้โดยสาร กรุณาเข้าหน้านี้จากรายการผู้โดยสารที่ต้องการรายงาน
+        </p>
       </div>
 
       <!--แนบไฟล์-->
@@ -111,8 +117,8 @@
         class="mb-2" 
         />
         <p class="px-4 py-2 text-gray-400 ">
-            เลือกภาพ วิดีโอ เสียง ได้ประเภทละไม่เกิน 3 ไฟล์
-            ({{ getFileCount(activeUpload) }}/3)
+          เลือกไฟล์แนบรวมกันได้ไม่เกิน 3 ไฟล์ (รูป/เสียง/mp4)
+          (รวม {{ getTotalFiles() }}/3)
         </p>
         <ul class="text-sm mt-2">
             <li v-for="(file, index) in form[activeUpload + 's']" :key="index">
@@ -235,8 +241,19 @@ const reports = useReports()
 const router = useRouter()
 const route = useRoute()
 
-const passengerId = route.query.passenger || null
-const routeId = route.query.route || null
+const normalizeQueryId = (value) => {
+  const raw = Array.isArray(value) ? value[0] : value
+  if (raw === null || raw === undefined) return null
+
+  const id = String(raw).trim()
+  if (!id || id === 'undefined' || id === 'null') return null
+
+  return id
+}
+
+const passengerId = normalizeQueryId(route.query.passenger)
+const routeId = normalizeQueryId(route.query.route)
+const hasTargetPassenger = !!passengerId
 const form = reactive({
   title: '',
   detail: '',
@@ -265,7 +282,12 @@ const submitForm = async () => {
     return
   }
 
-  if (form.category === 'trip' && !routeId) {
+  if (form.tag === 'พฤติกรรมผู้โดยสาร' && !hasTargetPassenger) {
+    alert('กรุณาเลือกรายงานจากผู้โดยสารที่ต้องการรายงานก่อน')
+    return
+  }
+
+  if (form.category === 'trip' && form.tag !== 'พฤติกรรมผู้โดยสาร' && !routeId) {
     alert('ไม่พบข้อมูลเส้นทาง กรุณาเข้าหน้านี้จากหน้ารายการเดินทาง')
     return
   }
@@ -275,9 +297,9 @@ const submitForm = async () => {
   try {
     const categoryMap = { system: 'SYSTEM', trip: 'TRIP' }
     const typeMap = {
-    'แอปพลิเคชันขัดข้อง': 'APPLICATION_PROBLEM',  
-    'แผนที่ขัดข้อง': 'MAP_PROBLEM',                
-    'ระบบทำงานล่าช้า': 'SYSTEM_SLOW',              
+    'แอปพลิเคชันขัดข้อง': 'OTHER',
+    'แผนที่ขัดข้อง': 'OTHER',
+    'ระบบทำงานล่าช้า': 'OTHER',
     'อุบัติเหตุ': 'ACCIDENT',
     'พฤติกรรมผู้โดยสาร': 'PASSENGER_BEHAVIOR',
     'อื่น ๆ': 'OTHER'
@@ -287,7 +309,10 @@ const submitForm = async () => {
     formData.append('title', form.title)
     formData.append('description', form.detail)
     formData.append('category', categoryMap[form.category])
-    formData.append('type', typeMap[form.tag])
+    const mappedType = typeMap[form.tag]
+    if (mappedType) {
+      formData.append('type', mappedType)
+    }
 
     if (routeId) formData.append('routeId', routeId)
     if (passengerId) formData.append('targetUserId', passengerId)
@@ -326,8 +351,12 @@ const uploadTypes = [
 
 const getAcceptType = (type) => {
   if (type === 'image') return 'image/*'
-  if (type === 'video') return 'video/*'
+  if (type === 'video') return 'video/mp4'
   if (type === 'audio') return 'audio/*'
+}
+
+const getTotalFiles = () => {
+  return form.images.length + form.videos.length + form.audios.length
 }
 
 const getFileCount = (type) => {
@@ -339,12 +368,12 @@ const getFileCount = (type) => {
 const handleUpload = (e) => {
   const files = Array.from(e.target.files)
 
-  if (activeUpload.value === 'image') {
-    if (form.images.length + files.length > 3) {
-      alert('อัปโหลดรูปได้ไม่เกิน 3 รูป')
-      return
-    }
+  if (getTotalFiles() + files.length > 3) {
+    alert('อัปโหลดไฟล์แนบรวมกันได้ไม่เกิน 3 ไฟล์')
+    return
+  }
 
+  if (activeUpload.value === 'image') {
     form.images.push(
       ...files.map(file => ({
         file,
@@ -355,8 +384,9 @@ const handleUpload = (e) => {
   }
 
   if (activeUpload.value === 'video') {
-    if (form.videos.length + files.length > 3) {
-      alert('อัปโหลดวิดีโอได้ไม่เกิน 3 ไฟล์')
+    const hasNonMp4 = files.some(file => file.type !== 'video/mp4')
+    if (hasNonMp4) {
+      alert('รองรับเฉพาะวิดีโอไฟล์ .mp4 เท่านั้น')
       return
     }
 
@@ -370,11 +400,6 @@ const handleUpload = (e) => {
   }
 
   if (activeUpload.value === 'audio') {
-    if (form.audios.length + files.length > 3) {
-      alert('อัปโหลดเสียงได้ไม่เกิน 3 ไฟล์')
-      return
-    }
-
     form.audios.push(
       ...files.map(file => ({
         file,

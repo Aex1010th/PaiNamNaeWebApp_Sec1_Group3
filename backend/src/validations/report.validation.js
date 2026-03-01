@@ -3,6 +3,19 @@ const { ReportType, ReportCategory, ReportStatus } = require('@prisma/client');
 
 const MEDIA_TYPES = ['FILE', 'AUDIO', 'IMAGE', 'VIDEO'];
 
+const optionalCuid = (fieldName) =>
+	z.preprocess((value) => {
+		if (value === null || value === undefined) return undefined;
+		if (typeof value === 'string') {
+			const trimmed = value.trim();
+			if (!trimmed || trimmed === 'undefined' || trimmed === 'null') {
+				return undefined;
+			}
+			return trimmed;
+		}
+		return value;
+	}, z.string().cuid(`${fieldName} must be a valid ${fieldName === 'routeId' ? 'route' : 'user'} ID`).optional());
+
 const mediaItemSchema = z.object({
 	url: z.string({ required_error: 'media.url is required' }).url('media.url must be a valid URL'),
 	type: z.enum(MEDIA_TYPES, {
@@ -29,16 +42,16 @@ const createReportSchema = z
 			required_error: 'category is required',
 			invalid_type_error: 'Invalid report category',
 		}),
-		targetUserId: z.string().cuid('targetUserId must be a valid user ID').optional(),
-		routeId: z.string().cuid('routeId must be a valid route ID').optional(),
+		targetUserId: optionalCuid('targetUserId'),
+		routeId: optionalCuid('routeId'),
 		media: z
 			.array(mediaItemSchema, { invalid_type_error: 'media must be an array' })
 			.max(3, 'media can contain at most 3 files')
 			.nullable()
 			.optional(),
 	})
-	.refine((data) => !(data.category === ReportCategory.TRIP && !data.routeId), {
-		message: 'routeId is required when category is TRIP',
+	.refine((data) => !(data.category === ReportCategory.TRIP && data.type !== ReportType.PASSENGER_BEHAVIOR && !data.routeId), {
+		message: 'routeId is required for TRIP reports except PASSENGER_BEHAVIOR',
 		path: ['routeId'],
 	})
 	.refine((data) => !(data.type === ReportType.PASSENGER_BEHAVIOR && !data.targetUserId), {
@@ -52,8 +65,8 @@ const updateReportSchema = z
 		description: z.string().trim().min(1, 'description cannot be empty').optional(),
 		type: z.nativeEnum(ReportType, { invalid_type_error: 'Invalid report type' }).optional(),
 		category: z.nativeEnum(ReportCategory, { invalid_type_error: 'Invalid report category' }).optional(),
-		targetUserId: z.string().cuid('targetUserId must be a valid user ID').optional(),
-		routeId: z.string().cuid('routeId must be a valid route ID').optional(),
+		targetUserId: optionalCuid('targetUserId'),
+		routeId: optionalCuid('routeId'),
 		media: z
 			.array(mediaItemSchema, { invalid_type_error: 'media must be an array' })
 			.max(3, 'media can contain at most 3 files')
@@ -65,7 +78,14 @@ const updateReportSchema = z
 	.refine((data) => Object.keys(data).length > 0, {
 		message: 'At least one field is required to update report',
 	})
-	
+	.refine((data) => !(data.category === ReportCategory.TRIP && data.type !== ReportType.PASSENGER_BEHAVIOR && !data.routeId), {
+		message: 'routeId is required for TRIP reports except PASSENGER_BEHAVIOR',
+		path: ['routeId'],
+	})
+	.refine((data) => !(data.type === ReportType.PASSENGER_BEHAVIOR && !data.targetUserId), {
+		message: 'targetUserId is required for PASSENGER_BEHAVIOR reports',
+		path: ['targetUserId'],
+	});
 
 const reportIdParamSchema = z.object({
 	id: z.string().cuid('Invalid report ID format'),

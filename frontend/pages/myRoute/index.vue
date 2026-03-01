@@ -532,6 +532,7 @@ async function fetchMyRoutes() {
             for (const b of (r.bookings || [])) {
                 formatted.push({
                     id: b.id,
+                    routeId: r.id,
                     status: (b.status || '').toLowerCase(),
                     origin: start?.name || `(${Number(start.lat).toFixed(2)}, ${Number(start.lng).toFixed(2)})`,
                     destination: end?.name || `(${Number(end.lat).toFixed(2)}, ${Number(end.lng).toFixed(2)})`,
@@ -543,6 +544,7 @@ async function fetchMyRoutes() {
                     price: (r.pricePerSeat || 0) * (b.numberOfSeats || 0),
                     seats: b.numberOfSeats || 0,
                     passenger: {
+                        id: b.passenger?.id || b.passengerId || null,
                         name: `${b.passenger?.firstName || ''} ${b.passenger?.lastName || ''}`.trim() || 'ผู้โดยสาร',
                         image: b.passenger?.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(b.passenger?.firstName || 'P')}&background=random&size=64`,
                         email: b.passenger?.email || '',
