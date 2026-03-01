@@ -62,7 +62,6 @@ const getReportById = asyncHandler(async (req, res) => {
 });
 
 const getReports = asyncHandler(async (req, res) => {
-  console.log('req.user:', req.user)  // ดูตรงนี้ก่อน
   const userId = req.user.sub;
   const role = req.user.role;
 
