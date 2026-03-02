@@ -297,9 +297,9 @@ const submitForm = async () => {
   try {
     const categoryMap = { system: 'SYSTEM', trip: 'TRIP' }
     const typeMap = {
-    'แอปพลิเคชันขัดข้อง': 'OTHER',
-    'แผนที่ขัดข้อง': 'OTHER',
-    'ระบบทำงานล่าช้า': 'OTHER',
+    'แอปพลิเคชันขัดข้อง': 'APPLICATION_PROBLEM',
+    'แผนที่ขัดข้อง': 'MAP_PROBLEM',
+    'ระบบทำงานล่าช้า': 'SYSTEM_SLOW',
     'อุบัติเหตุ': 'ACCIDENT',
     'พฤติกรรมผู้โดยสาร': 'PASSENGER_BEHAVIOR',
     'อื่น ๆ': 'OTHER'
