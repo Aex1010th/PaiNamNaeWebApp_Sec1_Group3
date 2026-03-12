@@ -1,10 +1,26 @@
 <template>
   <div class="min-h-screen bg-gray-100 flex justify-center py-10">
-    <div class="w-full max-w-2xl bg-white p-8 rounded shadow">
+    <div class="w-full max-w-2xl bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
 
-      <h1 class="text-2xl font-semibold text-center mb-8">
+      <div class="text-center mb-2 flex items-center justify-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg"
+        class="w-6 h-6 text-red-500"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor">
+
+        <path stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M12 9v3m0 4h.01M10.29 3.86l-7.29 12.6A1 1 0 004 18h16a1 1 0 00.87-1.5l-7.29-12.6a1 1 0 00-1.74 0z"/>
+        </svg>
+        <h1 class="text-2xl font-semibold">
         รายงานปัญหา
       </h1>
+      </div>
+      <p class="text-center text-gray-400 text-sm mb-8">
+        หากพบปัญหา กรุณาแจ้งรายละเอียดด้านล่าง ทีมงานจะรีบตรวจสอบและแก้ไขให้เร็วที่สุด
+      </p>
 
       <!--Title ปัญหา-->
       <div class="mb-6">
@@ -13,7 +29,10 @@
           v-model="form.title"
           type="text"
           placeholder="หัวข้อปัญหา"
-          class="w-full border-b border-gray-300 focus:outline-none focus:border-blue-500 py-2"
+          :class="[
+          'w-full border rounded-2xl px-4 py-2.5 focus:outline-none focus:border-blue-200 transition',
+          form.title ? 'bg-white border-blue-100' : 'bg-gray-50 border-gray-200'
+          ]"
         />
       </div>
 
@@ -24,8 +43,11 @@
           v-model="form.detail"
           rows="5"
           placeholder="อธิบายปัญหา"
-          class="w-full border-b border-gray-300 focus:outline-none focus:border-blue-500 py-2 resize-none"
-        ></textarea>
+          :class="[
+          'w-full border rounded-2xl px-4 py-2.5 focus:outline-none focus:border-blue-200 transition',
+          form.detail ? 'bg-white border-blue-100' : 'bg-gray-50 border-gray-200'
+          ]"        
+          ></textarea>
       </div>
 
       <!--หมวดหมู่ปัญหามี 2 อย่าง-->
@@ -37,7 +59,7 @@
             @click="form.category = 'system'"
             :class="categoryButton('system')"
           >
-            System Report
+            รายงานปัญหาระบบ
           </button>
 
           <button
@@ -45,37 +67,84 @@
             @click="form.category = 'trip'"
             :class="categoryButton('trip')"
           >
-            Trip Report
+            รายงานปัญหาการเดินทาง
           </button>
         </div>
       </div>
 
-      <!--Tag หลังเลือกหมวดหมู่-->
+       <!-- Tag หลังเลือกหมวดหมู่ เปลี่ยนเป็นให้คลิกเลือกดูง่ายกว่า คลิกได้ 1 ประเภท-->
       <div class="mb-6">
-        <label class="block mb-2 font-medium">ประเภท</label>
-        <select
-          v-model="form.tag"
-          :disabled="!form.category"
-          class="w-full p-4 border border-gray-200 rounded-lg bg-gray-50 "
-        >
-          <option disabled value="">เลือกประเภทของปัญหา</option>
+        <label class="block mb-3 font-medium">ประเภท</label>
 
-          <!-- System -->
+        <div class="flex flex-wrap gap-2">
           <template v-if="form.category === 'system'">
-            <option>แอปพลิเคชันขัดข้อง</option>
-            <option>แผนที่ขัดข้อง</option>
-            <option>ระบบทำงานล่าช้า</option>
-            <option>อื่น ๆ</option>
+
+            <button
+              type="button"
+              @click="selectTag('แอปพลิเคชันขัดข้อง')"
+              :class="tagClass('แอปพลิเคชันขัดข้อง')"
+            >
+              แอปพลิเคชันขัดข้อง
+            </button>
+
+            <button
+              type="button"
+              @click="selectTag('แผนที่ขัดข้อง')"
+              :class="tagClass('แผนที่ขัดข้อง')"
+            >
+              แผนที่ขัดข้อง
+            </button>
+
+            <button
+              type="button"
+              @click="selectTag('ระบบทำงานล่าช้า')"
+              :class="tagClass('ระบบทำงานล่าช้า')"
+            >
+              ระบบทำงานล่าช้า
+            </button>
+
+            <button
+              type="button"
+              @click="selectTag('อื่น ๆ')"
+              :class="tagClass('อื่น ๆ')"
+            >
+              อื่น ๆ
+            </button>
+
           </template>
 
           <!-- Trip -->
-          <template v-else>
-            <option>อุบัติเหตุ</option>
-            <option :disabled="!hasTargetPassenger">พฤติกรรมผู้โดยสาร</option>
-            <option>อื่น ๆ</option>
+          <template v-if="form.category === 'trip'">
+
+            <button
+              type="button"
+              @click="selectTag('อุบัติเหตุ')"
+              :class="tagClass('อุบัติเหตุ')"
+            >
+              อุบัติเหตุ
+            </button>
+
+            <button
+              type="button"
+              :disabled="!hasTargetPassenger"
+              @click="selectTag('พฤติกรรมผู้โดยสาร')"
+              :class="tagClass('พฤติกรรมผู้โดยสาร')"
+            >
+              พฤติกรรมผู้โดยสาร
+            </button>
+
+            <button
+              type="button"
+              @click="selectTag('อื่น ๆ')"
+              :class="tagClass('อื่น ๆ')"
+            >
+              อื่น ๆ
+            </button>
+
           </template>
 
-        </select>
+        </div>
+
         <p
           v-if="form.category === 'trip' && !hasTargetPassenger"
           class="mt-2 text-sm text-amber-600"
@@ -86,89 +155,133 @@
 
       <!--แนบไฟล์-->
       <div class="mb-8">
-        <label class="block mb-4 font-medium text-lg">แนบหลักฐาน</label>
-        
-        <!--ปุ่มเลือกประเภทหลักฐานภาพ วิดีโอ เสียง -->
-        <div class="flex gap-3 mb-5">
-            <button
-            v-for="type in uploadTypes"
-            :key="type.value"
-            type="button"
-            @click="activeUpload = type.value"
-            :class="[
-                'px-4 py-2 rounded transition',
-                activeUpload === type.value
-                ? 'bg-blue-600 text-white'
-                : 'px-4 py-2 bg-gray-100 text-gray-600 rounded hover:bg-gray-200'
-            ]">
-            {{ type.label }}
-            </button>
-        </div>
+       <div class="p-4 border border-gray-200 rounded-2xl bg-white">
 
-        <div
-        v-if="activeUpload"
-        class="p-4 border border-gray-200 rounded-lg bg-gray-50"
+        <!-- upload box -->
+        <label
+          class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition"
         >
-        <input
-        type="file"
-        :accept="getAcceptType(activeUpload)"
-        multiple
-        @change="handleUpload"
-        class="mb-2" 
-        />
-        <p class="px-4 py-2 text-gray-400 ">
-          เลือกไฟล์แนบรวมกันได้ไม่เกิน 3 ไฟล์ (รูป/เสียง/mp4)
-          (รวม {{ getTotalFiles() }}/3)
-        </p>
-        <ul class="text-sm mt-2">
-            <li v-for="(file, index) in form[activeUpload + 's']" :key="index">
-                • {{ file.name }}
-            </li>
-        </ul>
-        <!--preview-->
-        <div v-if="form.images.length" class="mt-4">
-          <div class="grid grid-cols-3 gap-3">
-            <img
-            v-for="(file, index) in form.images"
-            :key="index"
-            :src="file.url"
-            @click="openPreview('image', file.url)"
-            class="w-full h-full object-cover rounded cursor-pointer hover:scale-105 transition"/>
-          </div>
-        </div>
-        <div v-if="form.videos.length" class="mt-4">
-          <div class="space-y-3">
-            <video
-            v-for="(file, index) in form.videos"
-            :key="index"
-            :src="file.url"
-            @click="openPreview('video', file.url)"
-            class="w-full h-full object-cover rounded cursor-pointer hover:scale-105 transition">
-            </video>
-          </div>
-        </div>
-        
-        <div v-if="form.audios.length" class="mt-4">
-          <div class="space-y-2">
-            <div
-            v-for="(file, index) in form.audios"
-            :key="index"
-            @click="openPreview('audio', file.url)"
-            class="p-2 bg-gray-100 rounded cursor-pointer hover:bg-gray-200"
-            >
-             ▶ {{ file.name }}
-            </div>
-          </div>
-        </div>
 
-        </div>
+          <!--ไอคอนบวกตรงนี้-->
+      <div class="text-gray-400 mb-2">
+      <svg xmlns="http://www.w3.org/2000/svg"
+        class="w-8 h-8"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor">
 
+      <path stroke-linecap="round"
+      stroke-linejoin="round"
+            stroke-width="2"
+      d="M12 4v16m8-8H4"/>
+      </svg>
       </div>
+
+          <p class="text-sm text-gray-500">
+            คลิกเพื่อแนบไฟล์
+          </p>
+          <p class="text-xs text-gray-400">
+            รูป / เสียง / วิดีโอ
+          </p>
+          <input
+            type="file"
+            accept="image/*,video/mp4,audio/*"
+            multiple
+            @change="handleUpload"
+            class="hidden"
+          />
+
+        </label>
+
+        <p class="px-4 py-2 text-gray-400 text-sm">
+          แนบได้ไม่เกิน 3 ไฟล์ (รวม {{ getTotalFiles() }}/3)
+        </p>
+
+          <!-- รายชื่อไฟล์ -->
+          <ul class="text-sm mt-2">
+            <li v-for="(file, index) in allFiles" :key="index">
+              • {{ file.name }}
+            </li>
+          </ul>
+
+<!-- preview media -->
+<div v-if="form.images.length || form.videos.length" class="mt-4">
+  <div class="grid grid-cols-3 gap-3">
+
+    <!-- image -->
+    <div
+      v-for="(file, index) in form.images"
+      :key="'img'+index"
+      class="relative"
+    >
+      <img
+        :src="file.url"
+        @click="openPreview('image', file.url)"
+        class="w-full aspect-square object-cover rounded-xl cursor-pointer"
+      />
+
+      <button
+        @click.stop="removeFile('image', index)"
+        class="absolute top-1 right-1 bg-black/60 text-white w-5 h-5 rounded-full text-xs flex items-center justify-center"
+      >
+        ✕
+      </button>
+    </div>
+
+    <!-- video -->
+    <div
+      v-for="(file, index) in form.videos"
+      :key="'vid'+index"
+      class="relative"
+    >
+      <video
+        :src="file.url"
+        controls
+        @click="openPreview('video', file.url)"
+        class="w-full aspect-square object-cover rounded-xl cursor-pointer"
+      ></video>
+
+      <button
+        @click.stop="removeFile('video', index)"
+        class="absolute top-1 right-1 bg-black/60 text-white w-5 h-5 rounded-full text-xs flex items-center justify-center"
+      >
+        ✕
+      </button>
+    </div>
+
+  </div>
+</div>
+
+    <!-- preview audio -->
+    <div v-if="form.audios.length" class="mt-4 space-y-2">
+      <div
+        v-for="(file, index) in form.audios"
+        :key="index"
+        class="flex items-center justify-between p-2 bg-gray-100 rounded hover:bg-gray-200"
+      >
+        <span
+          class="cursor-pointer"
+          @click="openPreview('audio', file.url)"
+        >
+          ▶ {{ file.name }}
+        </span>
+
+        <button
+          @click.stop="removeFile('audio', index)"
+          class="text-gray-500 hover:text-red-500 text-sm"
+        >
+          ลบ
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
       
       <div class="flex justify-end space-x-3 mt-8">
         <button
         type="button"
-        class="px-4 py-2 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
+        class="px-5 py-2.5 bg-gray-100 text-gray-500 rounded-full hover:bg-gray-200 transition"
         @click="resetForm"
         >
         ยกเลิก
@@ -176,7 +289,7 @@
 
         <button
         type="button"
-        class="px-6 py-2 bg-red-600 text-white rounded hover:bg-red"
+        class="px-6 py-2.5 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition"
         :disabled="isSubmitting"
         @click="submitForm"
         >
@@ -337,8 +450,18 @@ const submitForm = async () => {
 
 const categoryButton = (type) => {
   return form.category === type
-    ? 'px-4 py-2 bg-blue-600 text-white rounded'
-    : 'px-4 py-2 bg-gray-100 text-gray-600 rounded hover:bg-gray-200'
+    ? 'px-5 py-2 bg-blue-100 text-blue-700 border border-blue-200 rounded-2xl text-sm transition'
+    : 'px-5 py-2 bg-gray-100 text-gray-600 border border-gray-200 rounded-2xl text-sm hover:bg-gray-200 transition'
+}
+
+const selectTag = (tag) => {
+  form.tag = tag
+}
+
+const tagClass = (tag) => {
+  return form.tag === tag
+    ? 'px-5 py-2 bg-blue-100 text-blue-700 border border-blue-200 rounded-2xl text-sm transition'
+    : 'px-5 py-2 bg-gray-100 text-gray-600 border border-gray-200 rounded-2xl text-sm hover:bg-gray-200 transition'
 }
 
 const activeUpload = ref(null)
@@ -373,41 +496,48 @@ const handleUpload = (e) => {
     return
   }
 
-  if (activeUpload.value === 'image') {
-    form.images.push(
-      ...files.map(file => ({
-        file,
-        url: URL.createObjectURL(file),
-        name: file.name
-      }))
-    )
-  }
+  files.forEach(file => {
 
-  if (activeUpload.value === 'video') {
-    const hasNonMp4 = files.some(file => file.type !== 'video/mp4')
-    if (hasNonMp4) {
-      alert('รองรับเฉพาะวิดีโอไฟล์ .mp4 เท่านั้น')
-      return
+    const url = URL.createObjectURL(file)
+
+    if (file.type.startsWith('image')) {
+      form.images.push({
+        file,
+        url,
+        name: file.name
+      })
     }
 
-    form.videos.push(
-      ...files.map(file => ({
-        file,
-        url: URL.createObjectURL(file),
-        name: file.name
-      }))
-    )
-  }
+    else if (file.type.startsWith('video')) {
 
-  if (activeUpload.value === 'audio') {
-    form.audios.push(
-      ...files.map(file => ({
+      if (file.type !== 'video/mp4') {
+        alert('รองรับเฉพาะวิดีโอไฟล์ .mp4 เท่านั้น')
+        return
+      }
+
+      form.videos.push({
         file,
-        url: URL.createObjectURL(file),
+        url,
         name: file.name
-      }))
-    )
-  }
+      })
+    }
+
+    else if (file.type.startsWith('audio')) {
+      form.audios.push({
+        file,
+        url,
+        name: file.name
+      })
+    }
+
+  })
+}
+
+//ลบไฟล์แนบเมื่อยังไม่กดส่ง
+const removeFile = (type, index) => {
+  if (type === 'image') form.images.splice(index, 1)
+  if (type === 'video') form.videos.splice(index, 1)
+  if (type === 'audio') form.audios.splice(index, 1)
 }
 
 // preview
