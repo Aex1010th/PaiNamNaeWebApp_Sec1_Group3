@@ -346,6 +346,7 @@
 
 
 <script setup>
+import Swal from 'sweetalert2'
 import { reactive,ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
@@ -438,9 +439,16 @@ const submitForm = async () => {
       method: 'POST',
       body: formData
     })
-      alert('ส่งรายงานปัญหาสำเร็จ ✓')
+    Swal.fire({
+      title: 'ส่งรายงานสำเร็จ',
+      text: 'ขอบคุณสำหรับการแจ้งปัญหา ทีมงานจะตรวจสอบให้เร็วที่สุด',
+      icon: 'success',
+      confirmButtonText: 'ตกลง',
+      confirmButtonColor: '#2563eb'
+    }).then(() => {
       resetForm()
-      router.push('/')
+      router.push('/')()
+  })
   } catch (err) {
     alert('ส่งรายงานไม่สำเร็จ\n' + (err.data?.message || err.message || 'กรุณาลองใหม่'))
   } finally {
@@ -492,7 +500,13 @@ const handleUpload = (e) => {
   const files = Array.from(e.target.files)
 
   if (getTotalFiles() + files.length > 3) {
-    alert('อัปโหลดไฟล์แนบรวมกันได้ไม่เกิน 3 ไฟล์')
+    Swal.fire({
+      title: 'อัปโหลดเกินจำนวน',
+      text: 'กรุณาแนบไฟล์ทั้งหมดไม่เกิน 3 ไฟล์',
+      icon: 'warning',
+      confirmButtonText: 'ตกลง',
+      confirmButtonColor: '#f59e0b'
+    });
     return
   }
 
@@ -511,7 +525,13 @@ const handleUpload = (e) => {
     else if (file.type.startsWith('video')) {
 
       if (file.type !== 'video/mp4') {
-        alert('รองรับเฉพาะวิดีโอไฟล์ .mp4 เท่านั้น')
+        Swal.fire({
+          title: 'ไม่รองรับประเภทไฟล์นี้',
+          text: 'รองรับเฉพาะวิดีโอไฟล์ .mp4 เท่านั้น',
+          icon: 'warning',
+          confirmButtonText: 'ตกลง',
+          confirmButtonColor: '#f59e0b'
+        });
         return
       }
 
