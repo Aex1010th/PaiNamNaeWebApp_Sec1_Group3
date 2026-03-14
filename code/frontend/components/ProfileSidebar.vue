@@ -58,7 +58,7 @@
             </div>
             <!--เพิ่่มปุ่มประวัติการรีวิวที่นี่-->
             <div>
-                <h3 class="text-sm font-semibold text-gray-900 mb-2 px-4">การรายงานรีวิว</h3>
+                <h3 class="text-sm font-semibold text-gray-900 mb-2 px-4">รีวิวและคะแนน</h3>
                 <ul class="space-y-1">
                     <li>
                         <NuxtLink to="/profile/review-history" class="block px-4 py-2 text-sm rounded-md"
