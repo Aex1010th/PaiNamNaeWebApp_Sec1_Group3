@@ -24,7 +24,9 @@
 
       <!--Title ปัญหา-->
       <div class="mb-6">
-        <label class="block mb-2 font-medium">หัวข้อปัญหา</label>
+        <label class="block mb-2 font-medium">
+          หัวข้อปัญหา<span class="text-red-400 text-sm ml-1">*</span>
+        </label>
         <input
           v-model="form.title"
           type="text"
@@ -38,7 +40,9 @@
 
       <!--คำอธิบายปัญหา-->
       <div class="mb-6">
-        <label class="block mb-2 font-medium">รายละเอียด</label>
+        <label class="block mb-2 font-medium">
+          รายละเอียด<span class="text-red-400 text-sm ml-1">*</span>
+        </label>
         <textarea
           v-model="form.detail"
           rows="5"
@@ -52,7 +56,9 @@
 
       <!--หมวดหมู่ปัญหามี 2 อย่าง-->
       <div class="mb-6">
-        <label class="block mb-3 font-medium">หมวดหมู่</label>
+        <label class="block mb-3 font-medium">
+          หมวดหมู่<span class="text-red-400 text-sm ml-1">*</span>
+        </label>
         <div class="flex space-x-4">
           <button
             type="button"
@@ -74,7 +80,9 @@
 
        <!-- Tag หลังเลือกหมวดหมู่ เปลี่ยนเป็นให้คลิกเลือกดูง่ายกว่า คลิกได้ 1 ประเภท-->
       <div class="mb-6">
-        <label class="block mb-3 font-medium">ประเภท</label>
+        <label class="block mb-3 font-medium">
+          ประเภท<span class="text-red-400 text-sm ml-1">*</span>
+        </label>
 
         <div class="flex flex-wrap gap-2">
           <template v-if="form.category === 'system'">
@@ -155,6 +163,9 @@
 
       <!--แนบไฟล์-->
       <div class="mb-8">
+        <label class="block mb-3 font-medium">
+          แนบไฟล์
+        </label>
        <div class="p-4 border border-gray-200 rounded-2xl bg-white">
 
         <!-- upload box -->
@@ -392,17 +403,35 @@ const isSubmitting = ref(false)
 
 const submitForm = async () => {
   if (!form.title || !form.detail || !form.tag) {
-    alert('กรุณากรอกข้อมูลให้ครบ')
+    Swal.fire({
+      title: 'กรอกข้อมูลไม่ครบ',
+      text: 'กรุณากรอกข้อมูลให้ครบก่อนส่งรายงาน',
+      icon: 'warning',
+      confirmButtonText: 'ตกลง',
+      confirmButtonColor: '#f59e0b'
+    })
     return
   }
 
   if (form.tag === 'พฤติกรรมผู้โดยสาร' && !hasTargetPassenger) {
-    alert('กรุณาเลือกรายงานจากผู้โดยสารที่ต้องการรายงานก่อน')
+      Swal.fire({
+        title: 'ไม่สามารถรายงานได้',
+        text: 'กรุณาเลือกรายงานจากผู้โดยสารที่ต้องการรายงานก่อน',
+        icon: 'warning',
+        confirmButtonText: 'ตกลง',
+        confirmButtonColor: '#f59e0b'
+      })
     return
   }
 
   if (form.category === 'trip' && form.tag !== 'พฤติกรรมผู้โดยสาร' && !routeId) {
-    alert('ไม่พบข้อมูลเส้นทาง กรุณาเข้าหน้านี้จากหน้ารายการเดินทาง')
+      Swal.fire({
+        title: 'ไม่พบข้อมูลเส้นทาง',
+        text: 'กรุณาเข้าหน้านี้จากหน้ารายการเดินทาง',
+        icon: 'warning',
+        confirmButtonText: 'ตกลง',
+        confirmButtonColor: '#f59e0b'
+      })
     return
   }
 
@@ -444,13 +473,19 @@ const submitForm = async () => {
       text: 'ขอบคุณสำหรับการแจ้งปัญหา ทีมงานจะตรวจสอบให้เร็วที่สุด',
       icon: 'success',
       confirmButtonText: 'ตกลง',
-      confirmButtonColor: '#2563eb'
+      confirmButtonColor: '#22c55e'
     }).then(() => {
       resetForm()
       router.push('/')()
   })
   } catch (err) {
-    alert('ส่งรายงานไม่สำเร็จ\n' + (err.data?.message || err.message || 'กรุณาลองใหม่'))
+    Swal.fire({
+      title: 'ส่งรายงานไม่สำเร็จ',
+      text: err.data?.message || err.message || 'กรุณาลองใหม่',
+      icon: 'error',
+      confirmButtonText: 'ตกลง',
+      confirmButtonColor: '#ef4444'
+    })
   } finally {
     isSubmitting.value = false
   }
