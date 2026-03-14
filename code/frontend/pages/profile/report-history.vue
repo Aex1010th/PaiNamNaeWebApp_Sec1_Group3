@@ -12,7 +12,7 @@
             </svg>
           </div>
           <h1 class="mb-2 text-3xl font-bold text-gray-800">ประวัติการรายงานปัญหา</h1>
-          <p class="max-w-md mx-auto text-gray-600">ตรวจสอบรายการรายงานปัญหาของคุณ</p>
+          <p class="max-w-md mx-auto text-gray-500">ติดตามสถานะและรายละเอียดของปัญหาที่คุณรายงาน</p>
         </div>
 
         <div v-if="pending" class="py-10 text-center text-gray-400">กำลังโหลดข้อมูล...</div>
@@ -26,19 +26,41 @@
             :to="`/report/history/${report.id}`"
             class="block p-5 mb-4 transition border border-gray-200 rounded-lg cursor-pointer hover:shadow-md"
           >
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between mb-2">
               <div class="text-lg font-semibold text-blue-600">{{ report.title }}</div>
-              <span class="px-3 py-1 text-xs text-white rounded-full" :class="statusColor(report.status)">
+              <span class="px-3 py-1 text-xs font-medium rounded-full border" :class="statusColor(report.status)">
                 {{ statusLabel(report.status) }}
               </span>
             </div>
-            <div class="mt-1 text-sm text-gray-500">
+            <div class="mt-1 flex items-center gap-1 text-sm text-gray-500">
+              <!-- clock icon -->
+              <svg xmlns="http://www.w3.org/2000/svg" 
+                   class="w-4 h-4 text-gray-400"
+                   fill="none" 
+                   viewBox="0 0 24 24" 
+                   stroke="currentColor">
+                <path stroke-linecap="round" 
+                      stroke-linejoin="round" 
+                      stroke-width="2" 
+                      d="M12 8v4l3 3M12 22a10 10 0 100-20 10 10 0 000 20z"/>
+              </svg>
               รายงานเมื่อ {{ formatDate(report.createdAt) }}
             </div>
             <div
               v-if="report.targetUserId"
-              class="mt-1 text-sm text-gray-600"
-            >
+              class="mt-1 flex items-center gap-1 text-sm text-gray-500">
+                <!-- user icon -->
+              <svg xmlns="http://www.w3.org/2000/svg"
+                   class="w-4 h-4 text-gray-500"
+                   fill="none"
+                   viewBox="0 0 24 24"
+                   stroke="currentColor">
+                <path stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+             </svg>
               ผู้ถูกรายงาน: {{ targetUserName(report) }}
             </div>
           </NuxtLink>
@@ -85,9 +107,9 @@ const statusLabel = (status) => ({
 })[status] ?? status
 
 const statusColor = (status) => ({
-  'RECEIVED':    'bg-orange-400',
-  'IN_PROGRESS': 'bg-blue-500',
-  'RESOLVED':    'bg-green-600',
-  'REJECTED':    'bg-red-500',
-})[status] ?? 'bg-gray-400'
+  'RECEIVED': 'bg-orange-100 text-orange-700 border-orange-200',
+  'IN_PROGRESS': 'bg-blue-100 text-blue-700 border-blue-200',
+  'RESOLVED': 'bg-green-100 text-green-700 border-green-200',
+  'REJECTED': 'bg-red-100 text-red-700 border-red-200',
+})[status] ?? 'bg-gray-100 text-gray-700 border-gray-200'
 </script>

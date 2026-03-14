@@ -51,9 +51,36 @@
           </div>
 
           <!-- วันที่ -->
-          <div class="text-gray-600 mb-6">
-            <p>รายงานเมื่อ: {{ formatDate(report.createdAt) }}</p>
-            <p v-if="report.updatedAt">อัปเดตล่าสุด: {{ formatDate(report.updatedAt) }}</p>
+          <div class="text-gray-600 mb-6 space-y-1">
+           <p class="flex items-center gap-2">
+              <!-- ไอคอนนาฬิกา -->
+              <svg xmlns="http://www.w3.org/2000/svg" 
+                   class="w-4 h-4 text-gray-400"
+                   fill="none" 
+                   viewBox="0 0 24 24" 
+                   stroke="currentColor">
+                <path stroke-linecap="round" 
+                      stroke-linejoin="round" 
+                      stroke-width="2" 
+                      d="M12 8v4l3 3M12 22a10 10 0 100-20 10 10 0 000 20z"/>
+              </svg>
+              รายงานเมื่อ: {{ formatDate(report.createdAt) }}
+            </p>
+
+            <p v-if="report.updatedAt" class="flex items-center gap-2">
+              <!-- ไอคอนดินสอ -->
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 class="w-4 h-4 text-gray-400"
+                 fill="none"
+                 viewBox="0 0 24 24"
+                 stroke="currentColor">
+              <path stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M11 5h2M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z"/>
+            </svg>
+              อัปเดตล่าสุด: {{ formatDate(report.updatedAt) }}
+            </p>
           </div>
 
           <!-- Status Box -->
@@ -66,62 +93,74 @@
 
           <!-- Details -->
           <div class="bg-gray-50 rounded-2xl p-8 border border-gray-100 shadow-sm">
-            <h2 class="text-xl font-bold mb-6 text-gray-800">ปัญหาที่คุณได้รายงานไว้</h2>
+            <h2 class="text-xl font-bold mb-6 text-gray-800">รายการปัญหาที่คุณรายงาน</h2>
 
-            <div class="space-y-6">
-              <div>
+            <div class="space-y-2">
+              <div class="p-4 bg-white rounded-2xl shadow-sm">
                 <h3 class="font-semibold mb-1">รายละเอียดปัญหา</h3>
                 <p class="text-gray-700 whitespace-pre-line">{{ report.description }}</p>
               </div>
 
-              <div>
+              <div class="p-4 bg-white rounded-2xl shadow-sm">
                 <h3 class="font-semibold mb-1">หมวดหมู่</h3>
                 <p class="text-gray-700">{{ categoryLabel(report.category) }}</p>
               </div>
 
-              <div>
+              <div class="p-4 bg-white rounded-2xl shadow-sm">
                 <h3 class="font-semibold mb-1">ประเภทปัญหา</h3>
                 <p class="text-gray-700">{{ typeLabel(report.type) }}</p>
               </div>
 
-              <!-- รูปภาพ -->
-              <div v-if="images.length">
-                <h3 class="font-semibold mb-3">รูปภาพ</h3>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <img
-                    v-for="(img, i) in images" :key="i"
-                    :src="img.url"
-                    @click="openPreview('image', img.url)"
-                    class="rounded-lg shadow object-cover h-40 w-full cursor-pointer hover:scale-105 transition"
-                  />
-                </div>
-              </div>
+              <div class="p-4 bg-white rounded-2xl shadow-sm">
+                <h3 class="font-semibold mb-3">ไฟล์แนบ</h3>
+                <!-- มีไฟล์ -->
+                <div v-if="images.length || videos.length || audios.length">
 
-              <!-- วิดีโอ -->
-              <div v-if="videos.length">
-                <h3 class="font-semibold mb-3">วิดีโอ</h3>
-                <div class="space-y-4">
-                  <video
-                    v-for="(vid, i) in videos" :key="i"
-                    :src="vid.url"
-                    @click="openPreview('video', vid.url)"
-                    class="rounded-lg w-full cursor-pointer hover:scale-105 transition"
-                  />
-                </div>
-              </div>
+                  <!-- รูปภาพ + วิดีโอ -->
+                  <div v-if="images.length || videos.length">
 
-              <!-- เสียง -->
-              <div v-if="audios.length">
-                <h3 class="font-semibold mb-3">ไฟล์เสียง</h3>
-                <div class="space-y-3">
-                  <div
-                    v-for="(aud, i) in audios" :key="i"
-                    @click="openPreview('audio', aud.url)"
-                    class="cursor-pointer p-3 bg-gray-100 rounded hover:bg-gray-200"
-                  >
-                    คลิกเพื่อฟังเสียง
+                    <div class="grid grid-cols-3 md:grid-cols-4 gap-2">
+                      <img
+                        v-for="(img, i) in images"
+                        :key="'img'+i"
+                        :src="img.url"
+                        @click="openPreview('image', img.url)"
+                        class="rounded-lg shadow w-full aspect-square object-cover cursor-pointer hover:scale-[1.02] transition"
+                      />
+
+                      <video
+                        v-for="(vid, i) in videos"
+                        :key="'vid'+i"
+                        :src="vid.url"
+                        @click="openPreview('video', vid.url)"
+                        class="rounded-lg shadow w-full aspect-square object-cover cursor-pointer hover:scale-[1.02] transition"
+                      ></video>
+                    </div>
                   </div>
+
+                  <!-- เสียง -->
+                  <div v-if="audios.length" class="mt-4">
+                    <h3 class="font-semibold mb-3">ไฟล์เสียง</h3>
+
+                    <div class="space-y-3">
+                      <div
+                        v-for="(aud, i) in audios"
+                        :key="i"
+                        @click="openPreview('audio', aud.url)"
+                        class="cursor-pointer p-3 bg-gray-100 rounded hover:bg-gray-200"
+                      >
+                        คลิกเพื่อฟังเสียง
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
+
+                <!-- ไม่มีไฟล์เลย -->
+                <div v-else class="text-sm text-gray-400">
+                  ไม่มีไฟล์แนบ
+                </div>
+
               </div>
 
             </div>
