@@ -226,10 +226,10 @@
                                             <!--เพิ่มธงสำหรับรายงานปัญหาที่นี่-->
                                             <NuxtLink
                                             :to="`/report/reportform?route=${trip.routeId}&passenger=${trip.passenger.id}&category=trip`"
-                                            class="text-red-500 hover:text-red-700 text-sm"
+                                            class="px-3 py-1 text-xs font-medium bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition"
                                             title="รายงานปัญหา"
                                             @click.stop>
-                                            🚩
+                                            🚩 รายงาน
                                             </NuxtLink>
 
                                             <div v-if="trip.passenger.isVerified"
