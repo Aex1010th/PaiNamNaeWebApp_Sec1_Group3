@@ -243,31 +243,48 @@ function toggleTag(tag) {
     else selectedTags.value.splice(idx, 1)
 }
 
+const user = JSON.parse(localStorage.getItem('user'))
+
 async function submitReview() {
     if (rating.value === 0) {
         error.value = 'กรุณาให้คะแนนก่อนส่งรีวิว'
         return
     }
+
     error.value = ''
     isSubmitting.value = true
+
     try {
-        // TODO: เชื่อม API จริงเมื่อ backend พร้อม
-        // await $api('/reviews', {
-        //     method: 'POST',
-        //     body: {
-        //         bookingId,
-        //         rating: rating.value,
-        //         comment: comment.value,
-        //         tags: selectedTags.value
-        //     }
-        // })
-        
-        // จำลองความสำเร็จก่อน
-        await new Promise(resolve => setTimeout(resolve, 800))
+
+        const reviewData = {
+            bookingId,
+            driverName: driverName.value,
+            driverImage: driverImage.value,
+            tripRoute: tripRoute.value,
+            rating: rating.value,
+            comment: comment.value,
+            tags: selectedTags.value,
+            images: images.value.map(i => i.url),
+            videos: videos.value.map(v => v.url),
+            audios: audios.value.map(a => a.url),
+            createdAt: new Date()
+        }
+
+        // ดึงของเก่ามาก่อน
+        const existing = JSON.parse(localStorage.getItem('reviews') || '[]')
+
+        // เพิ่มรีวิวใหม่
+        existing.unshift(reviewData)
+
+        // เก็บกลับ
+        localStorage.setItem('reviews', JSON.stringify(existing))
+
         toast.success('ขอบคุณสำหรับรีวิว!', 'รีวิวของคุณถูกบันทึกแล้ว')
-        router.push('/myTrip')
+
+        router.push('/profile/review-history')
+
     } catch (err) {
-        error.value = err?.data?.message || 'เกิดข้อผิดพลาด ลองใหม่อีกครั้ง'
+        error.value = 'เกิดข้อผิดพลาด'
     } finally {
         isSubmitting.value = false
     }
