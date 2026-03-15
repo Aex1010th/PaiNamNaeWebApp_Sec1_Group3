@@ -282,7 +282,7 @@ const createBooking = async (data, passengerId) => {
 };
 
 const getMyBookings = async (passengerId) => {
-  return prisma.booking.findMany({
+  const bookings = await prisma.booking.findMany({
     where: { passengerId },
     include: {
       route: {
@@ -311,6 +311,76 @@ const getMyBookings = async (passengerId) => {
     },
     orderBy: { createdAt: 'desc' },
   });
+
+  const driverIds = [
+    ...new Set(
+      bookings
+        .map((b) => b.route?.driver?.id)
+        .filter(Boolean)
+    ),
+  ];
+
+  if (!driverIds.length) return bookings;
+
+  if (!prisma.review) {
+    for (const booking of bookings) {
+      if (!booking.route?.driver) continue;
+      booking.route.driver.reviewSummary = {
+        average: 0,
+        total: 0,
+        breakdown: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+      };
+    }
+    return bookings;
+  }
+
+  const [aggregateRows, starRows] = await prisma.$transaction([
+    prisma.review.groupBy({
+      by: ['driverId'],
+      where: { driverId: { in: driverIds } },
+      _avg: { rating: true },
+      _count: { _all: true },
+    }),
+    prisma.review.groupBy({
+      by: ['driverId', 'rating'],
+      where: { driverId: { in: driverIds } },
+      _count: { _all: true },
+    }),
+  ]);
+
+  const summaryByDriver = new Map();
+  for (const id of driverIds) {
+    summaryByDriver.set(id, {
+      average: 0,
+      total: 0,
+      breakdown: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+    });
+  }
+
+  for (const row of aggregateRows) {
+    const current = summaryByDriver.get(row.driverId);
+    if (!current) continue;
+    current.average = row._avg.rating ? Number(row._avg.rating.toFixed(2)) : 0;
+    current.total = row._count._all || 0;
+  }
+
+  for (const row of starRows) {
+    const current = summaryByDriver.get(row.driverId);
+    if (!current) continue;
+    current.breakdown[row.rating] = row._count._all;
+  }
+
+  for (const booking of bookings) {
+    const driverId = booking.route?.driver?.id;
+    if (!driverId || !booking.route?.driver) continue;
+    booking.route.driver.reviewSummary = summaryByDriver.get(driverId) || {
+      average: 0,
+      total: 0,
+      breakdown: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+    };
+  }
+
+  return bookings;
 };
 
 const getBookingById = async (id) => {

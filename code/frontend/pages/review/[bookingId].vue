@@ -99,7 +99,7 @@
                                 <label v-if="videos.length < 3"
                                     class="cursor-pointer px-3 py-1.5 text-xs text-blue-600 border border-blue-300 rounded-full hover:bg-blue-50 transition">
                                     + เพิ่มวิดีโอ
-                                    <input type="file" accept="video/*" multiple class="hidden" @change="handleVideoUpload" />
+                                    <input type="file" accept="video/mp4" multiple class="hidden" @change="handleVideoUpload" />
                                 </label>
                             </div>
                             <div v-if="videos.length" class="space-y-2">
@@ -155,9 +155,9 @@
                             class="flex-1 px-4 py-3 text-sm text-gray-600 border border-gray-300 rounded-xl text-center hover:bg-gray-50 transition">
                             ยกเลิก
                         </NuxtLink>
-                        <button @click="submitReview" :disabled="rating === 0 || isSubmitting"
+                        <button @click="submitReview" :disabled="rating === 0 || isSubmitting || hasExistingReview"
                             class="flex-1 px-4 py-3 text-sm text-white bg-blue-600 rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition font-medium">
-                            {{ isSubmitting ? 'กำลังส่ง...' : 'ส่งรีวิว' }}
+                            {{ submitButtonText }}
                         </button>
                     </div>
 
@@ -186,6 +186,7 @@ const comment = ref('')
 const selectedTags = ref([])
 const isSubmitting = ref(false)
 const error = ref('')
+const hasExistingReview = ref(false)
 
 // ดึงข้อมูลจาก query params (ส่งมาจากหน้า myTrip)
 const driverName = computed(() => route.query.driverName || 'ผู้ขับ')
@@ -248,22 +249,34 @@ async function submitReview() {
         error.value = 'กรุณาให้คะแนนก่อนส่งรีวิว'
         return
     }
+    if (hasExistingReview.value) {
+        error.value = 'คุณส่งรีวิวทริปนี้ไปแล้ว'
+        return
+    }
+
     error.value = ''
     isSubmitting.value = true
     try {
-        // TODO: เชื่อม API จริงเมื่อ backend พร้อม
-        // await $api('/reviews', {
-        //     method: 'POST',
-        //     body: {
-        //         bookingId,
-        //         rating: rating.value,
-        //         comment: comment.value,
-        //         tags: selectedTags.value
-        //     }
-        // })
-        
-        // จำลองความสำเร็จก่อน
-        await new Promise(resolve => setTimeout(resolve, 800))
+        const formData = new FormData()
+        formData.append('rating', String(rating.value))
+
+        if (comment.value?.trim()) {
+            formData.append('comment', comment.value.trim())
+        }
+        if (selectedTags.value.length) {
+            formData.append('tags', JSON.stringify(selectedTags.value))
+        }
+
+        images.value.forEach((item) => formData.append('images', item.file))
+        videos.value.forEach((item) => formData.append('videos', item.file))
+        audios.value.forEach((item) => formData.append('audios', item.file))
+
+        await $api(`/reviews/booking/${bookingId}`, {
+            method: 'POST',
+            body: formData,
+        })
+
+        hasExistingReview.value = true
         toast.success('ขอบคุณสำหรับรีวิว!', 'รีวิวของคุณถูกบันทึกแล้ว')
         router.push('/myTrip')
     } catch (err) {
@@ -311,4 +324,24 @@ function handleVideoUpload(e) {
 
 function removeImage(idx) { images.value.splice(idx, 1) }
 function removeVideo(idx) { videos.value.splice(idx, 1) }
+
+const submitButtonText = computed(() => {
+    if (isSubmitting.value) return 'กำลังส่ง...'
+    if (hasExistingReview.value) return 'ส่งรีวิวแล้ว'
+    return 'ส่งรีวิว'
+})
+
+onMounted(async () => {
+    try {
+        const review = await $api(`/reviews/booking/${bookingId}/me`)
+        if (!review) return
+
+        hasExistingReview.value = true
+        rating.value = review.rating || 0
+        comment.value = review.comment || ''
+        selectedTags.value = Array.isArray(review.tags) ? review.tags : []
+    } catch (err) {
+        console.error('Failed to load existing review', err)
+    }
+})
 </script>

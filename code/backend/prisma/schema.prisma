@@ -114,6 +114,8 @@ model User {
   reportsCreated   Report[] @relation("Reporter")
   reportsTargeted  Report[] @relation("TargetUser")
   adminReplies     Report[] @relation("AdminReply")
+  writtenReviews   Review[] @relation("PassengerReviews")
+  receivedReviews  Review[] @relation("DriverReviews")
 
   @@index([role])
   @@index([isActive])
@@ -215,6 +217,7 @@ model Route {
 
   bookings        Booking[]
   reports         Report[]
+  reviews         Review[]
 
   @@index([driverId])
   @@index([vehicleId])
@@ -237,6 +240,33 @@ model Booking {
   pickupLocation  Json          @db.Json
   dropoffLocation Json          @db.Json
   createdAt       DateTime      @default(now())
+  review          Review?
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  bookingId   String   @unique
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  passengerId String
+  passenger   User     @relation("PassengerReviews", fields: [passengerId], references: [id], onDelete: Cascade)
+
+  driverId    String
+  driver      User     @relation("DriverReviews", fields: [driverId], references: [id], onDelete: Cascade)
+
+  routeId     String
+  route       Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
+
+  rating      Int
+  comment     String?
+  tags        String[]
+  media       Json?    @db.Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([passengerId, createdAt])
+  @@index([driverId, createdAt])
+  @@index([routeId])
 }
 
 model Report {

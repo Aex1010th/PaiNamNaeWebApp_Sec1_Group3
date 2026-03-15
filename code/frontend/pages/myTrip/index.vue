@@ -80,13 +80,7 @@
                                                 :reviews="{
                                                     average: trip.driver.rating || 0,
                                                     total: trip.driver.reviews || 0,
-                                                    breakdown: {
-                                                        5: Math.floor((trip.driver.reviews || 0) * 0.7),
-                                                        4: Math.floor((trip.driver.reviews || 0) * 0.2),
-                                                        3: Math.floor((trip.driver.reviews || 0) * 0.07),
-                                                        2: Math.floor((trip.driver.reviews || 0) * 0.02),
-                                                        1: Math.floor((trip.driver.reviews || 0) * 0.01)
-                                                    }
+                                                    breakdown: trip.driver.breakdown || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
                                                 }"
                                             />
                                         </div>
@@ -343,13 +337,15 @@ async function fetchMyTrips() {
 
         // map ข้อมูลพื้นฐานก่อน (ตั้งชื่อชั่วคราวเป็นพิกัด แล้วไป reverse geocode ภายหลัง)
         const formatted = bookings.map((b) => {
+            const reviewSummary = b.route?.driver?.reviewSummary || {}
             const driverData = {
                 name: `${b.route.driver.firstName} ${b.route.driver.lastName}`.trim(),
                 image:
                     b.route.driver.profilePicture ||
                     `https://ui-avatars.com/api/?name=${encodeURIComponent(b.route.driver.firstName || 'U')}&background=random&size=64`,
-                rating: 4.5,
-                reviews: Math.floor(Math.random() * 50) + 5
+                rating: Number(reviewSummary.average || 0),
+                reviews: Number(reviewSummary.total || 0),
+                breakdown: reviewSummary.breakdown || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
             }
 
             const carDetails = []
