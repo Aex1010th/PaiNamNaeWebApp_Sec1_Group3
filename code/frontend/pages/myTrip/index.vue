@@ -40,12 +40,19 @@
                                             <h4 class="text-lg font-semibold text-gray-900">
                                                 {{ trip.origin }} → {{ trip.destination }}
                                             </h4>
+                                            
                                             <span v-if="trip.status === 'pending'"
                                                 class="status-badge status-pending">รอดำเนินการ</span>
+                                            
                                             <span v-else-if="trip.status === 'confirmed'"
                                                 class="status-badge status-confirmed">ยืนยันแล้ว</span>
+
+                                            <span v-else-if="trip.status === 'completed'"
+                                                class="status-badge status-completed">เสร็จสิ้นแล้ว</span>
+                                            
                                             <span v-else-if="trip.status === 'rejected'"
                                                 class="status-badge status-rejected">ปฏิเสธ</span>
+                                            
                                             <span v-else-if="trip.status === 'cancelled'"
                                                 class="status-badge status-cancelled">ยกเลิก</span>
                                         </div>
@@ -63,23 +70,29 @@
                                 </div>
 
                                 <div class="flex items-center mb-4 space-x-4">
-                                    <img :src="trip.driver.image" :alt="trip.driver.name"
-                                        class="object-cover w-12 h-12 rounded-full" />
+                                    <img :src="trip.driver.image" class="w-12 h-12 rounded-full" />
                                     <div class="flex-1">
                                         <h5 class="font-medium text-gray-900">{{ trip.driver.name }}</h5>
-                                        <div class="flex items-center">
-                                            <div class="flex text-sm text-yellow-400">
-                                                <span>
-                                                    {{ '★'.repeat(Math.round(trip.driver.rating)) }}{{ '☆'.repeat(5 -
-                                                        Math.round(trip.driver.rating)) }}
-                                                </span>
-                                            </div>
-                                            <span class="ml-2 text-sm text-gray-600">{{ trip.driver.rating }} ({{
-                                                trip.driver.reviews }} รีวิว)</span>
+                                        
+                                        <!-- ✨ ส่วนนี้เปลี่ยนใหม่ -->
+                                        <div class="mt-2">
+                                            <DriverReviewPreview
+                                                :reviews="{
+                                                    average: trip.driver.rating || 0,
+                                                    total: trip.driver.reviews || 0,
+                                                    breakdown: {
+                                                        5: Math.floor((trip.driver.reviews || 0) * 0.7),
+                                                        4: Math.floor((trip.driver.reviews || 0) * 0.2),
+                                                        3: Math.floor((trip.driver.reviews || 0) * 0.07),
+                                                        2: Math.floor((trip.driver.reviews || 0) * 0.02),
+                                                        1: Math.floor((trip.driver.reviews || 0) * 0.01)
+                                                    }
+                                                }"
+                                            />
                                         </div>
                                     </div>
                                     <div class="text-right">
-                                        <div class="text-lg font-bold text-blue-600">{{ trip.price }} บาท</div>
+                                        <div class="text-lg font-bold text-blue-600">500 บาท</div>
                                         <div class="text-sm text-gray-600">จำนวน {{ trip.seats }} ที่นั่ง</div>
                                     </div>
                                 </div>
@@ -158,6 +171,23 @@
                                             class="px-4 py-2 text-sm text-white transition duration-200 bg-blue-600 rounded-md hover:bg-blue-700">
                                             แชทกับผู้ขับ
                                         </button>
+                                    </template>
+                                    
+                                    <!-- COMPLETED:เพิ่มตรงนี้ -->
+                                    <template v-else-if="trip.status === 'completed'">
+                                        <NuxtLink 
+                                            :to="{
+                                                path: `/review/${trip.id}`,
+                                                query: {
+                                                    driverName: trip.driver.name,
+                                                    driverImage: trip.driver.image,
+                                                    tripRoute: `${trip.origin} → ${trip.destination}`
+                                                }
+                                            }"
+                                            @click.stop
+                                            class="px-4 py-2 text-sm text-white bg-yellow-500 rounded-md hover:bg-yellow-600 flex items-center gap-1">
+                                            ⭐ รีวิวผู้ขับ
+                                        </NuxtLink>
                                     </template>
 
                                     <!-- REJECTED / CANCELLED: ลบได้ -->
@@ -258,11 +288,13 @@ let stopMarkers = []
 
 const GMAPS_CB = '__gmapsReady__'
 
+
 const tabs = [
     { status: 'pending', label: 'รอดำเนินการ' },
     { status: 'confirmed', label: 'ยืนยันแล้ว' },
     { status: 'rejected', label: 'ปฏิเสธ' },
     { status: 'cancelled', label: 'ยกเลิก' },
+    { status: 'completed', label: 'เสร็จสิ้นแล้ว' }, // <--- เพิ่มบรรทัดนี้
     { status: 'all', label: 'ทั้งหมด' }
 ]
 
@@ -360,9 +392,18 @@ async function fetchMyTrips() {
                 )
                 .filter(Boolean)
 
+            // เพิ่มตรงนี้ก่อน return {
+            let bookingStatus = String(b.status || '').toLowerCase()
+            const routeStatus = String(b.route?.status || '').toUpperCase()
+            if (routeStatus === 'IN_TRANSIT' && bookingStatus === 'confirmed') {
+                bookingStatus = 'in_transit'
+            } else if (routeStatus === 'COMPLETED' && bookingStatus === 'confirmed') {
+                bookingStatus = 'completed'
+            }    
+
             return {
                 id: b.id,
-                status: String(b.status || '').toLowerCase(),
+                status: bookingStatus,  // ← เปลี่ยนจาก String(b.status || '').toLowerCase()
                 origin: start?.name || `(${Number(start.lat).toFixed(2)}, ${Number(start.lng).toFixed(2)})`,
                 destination: end?.name || `(${Number(end.lat).toFixed(2)}, ${Number(end.lng).toFixed(2)})`,
                 originAddress: start?.address ? cleanAddr(start.address) : null,
@@ -731,6 +772,10 @@ useHead({
 })
 
 onMounted(() => {
+
+    // รับ tab จาก query param
+    const tabFromQuery = useRoute().query.tab
+    if (tabFromQuery) activeTab.value = tabFromQuery
     // ถ้า script โหลดแล้ว
     if (window.google?.maps) {
         initializeMap()
@@ -835,6 +880,11 @@ function initializeMap() {
     color: #6b7280;
 }
 
+.status-completed {
+    background-color: #def7ec; /* สีเขียวอ่อน */
+    color: #03543f;           /* สีเขียวเข้ม */
+}
+
 @keyframes slide-in-from-top {
     from {
         opacity: 0;
@@ -859,3 +909,15 @@ function initializeMap() {
     animation-duration: 300ms;
 }
 </style>
+
+
+
+#const tabs = [
+    { status: 'pending', label: 'รอดำเนินการ' },
+    { status: 'confirmed', label: 'ยืนยันแล้ว' },
+    { status: 'completed', label: 'เสร็จสิ้นแล้ว' }, // เพิ่มอันนี้เข้าไป
+    { status: 'rejected', label: 'ปฏิเสธ' },
+    { status: 'cancelled', label: 'ยกเลิก' },
+    { status: 'all', label: 'ทั้งหมด' }
+]
+

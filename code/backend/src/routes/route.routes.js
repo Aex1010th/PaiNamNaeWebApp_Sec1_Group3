@@ -11,7 +11,8 @@ const {
   updateRouteByAdminSchema,
   adminDriverIdParamSchema,
   listRoutesQuerySchema,
-  cancelRouteSchema
+  cancelRouteSchema,
+  updateRouteStatusSchema,  // เพิ่ม
 } = require("../validations/route.validation");
 
 const router = express.Router();
@@ -119,6 +120,15 @@ router.patch(
   requireDriverVerified,
   validate({ params: idParamSchema, body: cancelRouteSchema }),
   routeController.cancelRoute
+);
+
+// PATCH /routes/:id/status
+router.patch(
+  "/:id/status",
+  protect,
+  requireDriverVerified,
+  validate({ params: idParamSchema, body: updateRouteStatusSchema }),
+  routeController.updateRouteStatus
 );
 
 // DELETE /routes/:id

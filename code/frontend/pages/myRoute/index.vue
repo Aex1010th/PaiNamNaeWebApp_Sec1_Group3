@@ -20,7 +20,14 @@
                     <div class="bg-white border border-gray-300 rounded-lg shadow-md">
                         <div class="p-6 border-b border-gray-300">
                             <h3 class="text-lg font-semibold text-gray-900">
-                                {{ activeTab === 'myRoutes' ? 'เส้นทางของฉัน' : 'รายการคำขอจอง' }}
+                                {{ activeTab === 'myRoutes' ? 'เส้นทางของฉัน' :
+                                activeTab === 'pending' ? 'รายการคำขอจอง' :
+                                activeTab === 'confirmed' ? 'รายการที่ยืนยันแล้ว' :
+                                activeTab === 'in_transit' ? 'รายการที่กำลังเดินทาง' :
+                                activeTab === 'completed' ? 'รายการที่เสร็จสิ้น' :
+                                activeTab === 'rejected' ? 'รายการที่ปฏิเสธ' :
+                                activeTab === 'cancelled' ? 'รายการที่ยกเลิก' :
+                                'รายการคำขอจองทั้งหมด' }}
                             </h3>
                         </div>
 
@@ -46,8 +53,16 @@
                                             <span class="status-badge" :class="{
                                                 'status-confirmed': route.status === 'available',
                                                 'status-pending': route.status === 'full',
+                                                'status-in-transit': route.status === 'in_transit',
+                                                'status-completed': route.status === 'completed',
                                             }">
-                                                {{ route.status === 'available' ? 'เปิดรับผู้โดยสาร' : 'เต็ม' }}
+                                                {{
+                                                    route.status === 'available' ? 'เปิดรับผู้โดยสาร' :
+                                                    route.status === 'full' ? 'เต็ม' :
+                                                    route.status === 'in_transit' ? 'กำลังเดินทาง' :
+                                                    route.status === 'completed' ? 'เสร็จสิ้น' :
+                                                    route.status
+                                                }}
                                             </span>
                                         </div>
                                         <p class="mt-1 text-sm text-gray-600">
@@ -196,6 +211,13 @@
                                                 class="status-badge status-rejected">ปฏิเสธ</span>
                                             <span v-else-if="trip.status === 'cancelled'"
                                                 class="status-badge status-cancelled">ยกเลิก</span>
+                                            
+
+                                            <!-- เพิ่ม 2 บรรทัดนี้ -->
+                                            <span v-else-if="trip.status === 'in_transit'"
+                                                class="status-badge status-in-transit">กำลังเดินทาง</span>
+                                            <span v-else-if="trip.status === 'completed'"
+                                                class="status-badge status-completed">เสร็จสิ้น</span>
                                         </div>
                                         <p class="mt-1 text-sm text-gray-600">จุดนัดพบ: {{ trip.pickupPoint }}</p>
                                         <p class="text-sm text-gray-600">
@@ -226,10 +248,10 @@
                                             <!--เพิ่มธงสำหรับรายงานปัญหาที่นี่-->
                                             <NuxtLink
                                             :to="`/report/reportform?route=${trip.routeId}&passenger=${trip.passenger.id}&category=trip`"
-                                            class="text-red-500 hover:text-red-700 text-sm"
+                                            class="px-3 py-1 text-xs font-medium bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition"
                                             title="รายงานปัญหา"
                                             @click.stop>
-                                            🚩
+                                            🚩 รายงาน
                                             </NuxtLink>
 
                                             <div v-if="trip.passenger.isVerified"
@@ -345,6 +367,7 @@
                                 </div>
 
                                 <div class="flex justify-end space-x-3" :class="{ 'mt-4': selectedTripId !== trip.id }">
+                                    <!-- pending: ยืนยัน/ปฏิเสธ -->
                                     <template v-if="trip.status === 'pending'">
                                         <button @click.stop="openConfirmModal(trip, 'confirm')"
                                             class="px-4 py-2 text-sm text-white transition duration-200 bg-blue-600 rounded-md hover:bg-blue-700">
@@ -356,11 +379,24 @@
                                         </button>
                                     </template>
 
-                                    <button v-else-if="trip.status === 'confirmed'"
-                                        class="px-4 py-2 text-sm text-white transition duration-200 bg-blue-600 rounded-md hover:bg-blue-700">
-                                        แชทกับผู้โดยสาร
-                                    </button>
+                                    <!-- confirmed: เริ่มการเดินทาง -->
+                                     <!-- confirmed: รอ backend รองรับ IN_TRANSIT -->
+                                    <template v-else-if="trip.status === 'confirmed'">
+                                        <button @click.stop="openConfirmModal(trip, 'start')"
+                                            class="px-4 py-2 text-sm text-white transition duration-200 bg-green-600 rounded-md hover:bg-green-700">
+                                            เริ่มการเดินทาง
+                                        </button>
+                                    </template>
 
+                                    <!-- in_transit: จบการเดินทาง -->
+                                    <template v-else-if="trip.status === 'in_transit'">
+                                        <button @click.stop="openConfirmModal(trip, 'complete')"
+                                            class="px-4 py-2 text-sm text-white transition duration-200 bg-orange-500 rounded-md hover:bg-orange-600">
+                                            จบการเดินทาง
+                                        </button>
+                                    </template>
+
+                                    <!-- rejected/cancelled: ลบ -->
                                     <button v-else-if="['rejected', 'cancelled'].includes(trip.status)"
                                         @click.stop="openConfirmModal(trip, 'delete')"
                                         class="px-4 py-2 text-sm text-gray-600 transition duration-200 border border-gray-300 rounded-md hover:bg-gray-50">
@@ -430,6 +466,8 @@ let stopMarkers = []
 const tabs = [
     { status: 'pending', label: 'รอดำเนินการ' },
     { status: 'confirmed', label: 'ยืนยันแล้ว' },
+    { status: 'in_transit', label: 'กำลังเดินทาง' },  // เพิ่ม
+    { status: 'completed', label: 'เสร็จสิ้น' },       // เพิ่ม
     { status: 'rejected', label: 'ปฏิเสธ' },
     { status: 'cancelled', label: 'ยกเลิก' },
     { status: 'all', label: 'ทั้งหมด' },
@@ -481,7 +519,7 @@ async function fetchMyRoutes() {
     try {
         const routes = await $api('/routes/me')
 
-        const allowedRouteStatuses = new Set(['AVAILABLE', 'FULL', 'IN_TRANSIT'])
+        const allowedRouteStatuses = new Set(['AVAILABLE', 'FULL', 'IN_TRANSIT', 'COMPLETED'])
 
         const formatted = []
         const ownRoutes = []
@@ -530,10 +568,16 @@ async function fetchMyRoutes() {
 
             // แปลงเป็น "คำขอจอง" ต่อ booking
             for (const b of (r.bookings || [])) {
+                let bookingStatus = (b.status || '').toLowerCase()
+    if (routeStatus === 'IN_TRANSIT' && bookingStatus === 'confirmed') {
+        bookingStatus = 'in_transit'
+    } else if (routeStatus === 'COMPLETED' && bookingStatus === 'confirmed') {
+        bookingStatus = 'completed'
+    }
                 formatted.push({
                     id: b.id,
                     routeId: r.id,
-                    status: (b.status || '').toLowerCase(),
+                    status: bookingStatus,  // ← ใช้ bookingStatus แทน
                     origin: start?.name || `(${Number(start.lat).toFixed(2)}, ${Number(start.lng).toFixed(2)})`,
                     destination: end?.name || `(${Number(end.lat).toFixed(2)}, ${Number(end.lng).toFixed(2)})`,
                     originHasName: !!start?.name,
@@ -784,6 +828,22 @@ const openConfirmModal = (trip, action) => {
             action: 'reject',
             variant: 'danger',
         }
+    } else if (action === 'start') {
+        modalContent.value = {
+            title: 'เริ่มการเดินทาง',
+            message: `ยืนยันการเริ่มเดินทาง?\nผู้โดยสารทุกคนในเส้นทางนี้จะถูกอัปเดตพร้อมกัน`,
+            confirmText: 'เริ่มเดินทาง',
+            action: 'start',
+            variant: 'primary',
+        }
+    } else if (action === 'complete') {
+        modalContent.value = {
+            title: 'จบการเดินทาง',
+            message: `ยืนยันการจบการเดินทาง?\nเส้นทางนี้จะถูกปิดสำหรับผู้โดยสารทุกคน`,
+            confirmText: 'จบการเดินทาง',
+            action: 'complete',
+            variant: 'primary',
+        }    
     } else if (action === 'delete') {
         modalContent.value = {
             title: 'ยืนยันการลบรายการ',
@@ -811,6 +871,19 @@ const handleConfirmAction = async () => {
             toast.success('สำเร็จ', 'ยืนยันคำขอแล้ว')
         } else if (action === 'reject') {
             await $api(`/bookings/${bookingId}/status`, { method: 'PATCH', body: { status: 'REJECTED' } })
+            } else if (action === 'start') {
+                await $api(`/routes/${tripToAction.value.routeId}/status`, {
+                    method: 'PATCH',
+                    body: { status: 'IN_TRANSIT' }
+                })
+                toast.success('สำเร็จ', 'เริ่มการเดินทางแล้ว')
+            } else if (action === 'complete') {
+                await $api(`/routes/${tripToAction.value.routeId}/status`, {
+                    method: 'PATCH',
+                    body: { status: 'COMPLETED' }
+                })
+    
+            toast.success('สำเร็จ', 'จบการเดินทางแล้ว')
             toast.success('สำเร็จ', 'ปฏิเสธคำขอแล้ว')
         } else if (action === 'delete') {
             await $api(`/bookings/${bookingId}`, { method: 'DELETE' })
@@ -1025,4 +1098,16 @@ watch(activeTab, () => {
 .duration-300 {
     animation-duration: 300ms;
 }
+
+.status-in-transit {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.status-completed {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+
 </style>
