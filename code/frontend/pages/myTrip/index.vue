@@ -75,6 +75,12 @@
                                         <h5 class="font-medium text-gray-900">{{ trip.driver.name }}</h5>
                                         
                                         <!-- ✨ ส่วนนี้เปลี่ยนใหม่ -->
+                                         <!--คลิกค่าเฉลี่ยคะแนนปล้วมาที่รีวิวไดร์เวอร์-->
+                                         <NuxtLink
+                                           :to="`/driver/${trip.driver.id}/reviews?driverName=${encodeURIComponent(trip.driver.name)}`"
+                                           @click.stop
+                                           class="inline-block hover:opacity-80 transition"
+                                         >
                                         <div class="mt-2">
                                             <DriverReviewPreview
                                                 :reviews="{
@@ -90,6 +96,7 @@
                                                 }"
                                             />
                                         </div>
+                                         </NuxtLink>
                                     </div>
                                     <div class="text-right">
                                         <div class="text-lg font-bold text-blue-600">500 บาท</div>
@@ -180,6 +187,7 @@
                                                 path: `/review/${trip.id}`,
                                                 query: {
                                                     driverName: trip.driver.name,
+                                                    driverId: trip.driver.id,
                                                     driverImage: trip.driver.image,
                                                     tripRoute: `${trip.origin} → ${trip.destination}`
                                                 }
@@ -344,6 +352,7 @@ async function fetchMyTrips() {
         // map ข้อมูลพื้นฐานก่อน (ตั้งชื่อชั่วคราวเป็นพิกัด แล้วไป reverse geocode ภายหลัง)
         const formatted = bookings.map((b) => {
             const driverData = {
+                id: b.route.driver.id,  // ← เพิ่มบรรทัดนี้
                 name: `${b.route.driver.firstName} ${b.route.driver.lastName}`.trim(),
                 image:
                     b.route.driver.profilePicture ||

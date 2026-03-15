@@ -1,17 +1,16 @@
 <template>
   <div class="min-h-screen bg-gray-100 flex justify-center pt-4">
     <div class="w-full max-w-5xl mx-auto">
-      <div class="flex justify-start mb-2">
-        <button
-          @click="$router.back()"
-          class="px-3 py-1.5 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
-        >
-          ← กลับ
-        </button>
-      </div>
 
       <div class="w-full max-w-5xl bg-white p-8 rounded-xl shadow">
-
+      <div class="flex justify-end mb-1">
+        <button @click="$router.back()" class="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 hover:shadow-sm px-3 py-1.5 rounded-lg transition-all duration-200">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+          กลับ
+        </button>
+      </div>
         <!-- Loading -->
         <div v-if="pending" class="text-center text-gray-400 py-10">
           กำลังโหลดข้อมูล...

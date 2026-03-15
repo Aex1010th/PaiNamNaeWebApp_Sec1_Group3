@@ -176,12 +176,12 @@
 
           <!-- Image -->
           <img v-if="preview.type === 'image'" :src="preview.url"
-            class="w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl" />
+            class="w-full max-h-[80vh] object-contain" />
 
           <!-- Video -->
           <video v-else-if="preview.type === 'video'" :src="preview.url"
             controls autoplay
-            class="w-full max-h-[80vh] rounded-2xl shadow-2xl" />
+            class="w-full max-h-[80vh]" />
 
           <!-- Audio -->
           <div v-else-if="preview.type === 'audio'" class="bg-white rounded-2xl p-6 shadow-2xl">

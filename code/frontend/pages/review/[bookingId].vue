@@ -257,8 +257,10 @@ async function submitReview() {
     try {
 
         const reviewData = {
+            userId: user?.id,
             bookingId,
             driverName: driverName.value,
+            driverId: route.query.driverId,
             driverImage: driverImage.value,
             tripRoute: tripRoute.value,
             rating: rating.value,
@@ -267,7 +269,12 @@ async function submitReview() {
             images: images.value.map(i => i.url),
             videos: videos.value.map(v => v.url),
             audios: audios.value.map(a => a.url),
-            createdAt: new Date()
+            createdAt: new Date(),
+            reviewer: {                             
+            firstName:    user?.firstName    ?? '',
+            lastName:     user?.lastName     ?? '',
+            profileImage: user?.profilePicture ?? '',
+            }
         }
 
         // ดึงของเก่ามาก่อน
