@@ -12,6 +12,12 @@ const {
 const router = express.Router();
 
 router.get(
+  '/me',
+  protect,
+  reviewController.getMyWrittenReviews
+);
+
+router.get(
   '/booking/:bookingId/me',
   protect,
   validate({ params: idParamSchema }),
@@ -34,6 +40,12 @@ router.get(
   '/driver/:driverId/summary',
   validate({ params: driverIdParamSchema }),
   reviewController.getDriverSummary
+);
+
+router.get(
+  '/driver/:driverId',
+  validate({ params: driverIdParamSchema }),
+  reviewController.getDriverReviews
 );
 
 module.exports = router;

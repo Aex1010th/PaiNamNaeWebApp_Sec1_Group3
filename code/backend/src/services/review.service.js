@@ -16,6 +16,45 @@ const REVIEW_SELECT = {
   updatedAt: true,
 };
 
+const REVIEW_LIST_SELECT = {
+  id: true,
+  bookingId: true,
+  routeId: true,
+  passengerId: true,
+  driverId: true,
+  rating: true,
+  comment: true,
+  tags: true,
+  media: true,
+  createdAt: true,
+  updatedAt: true,
+  passenger: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      profilePicture: true,
+    },
+  },
+  driver: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      profilePicture: true,
+      createdAt: true,
+    },
+  },
+  route: {
+    select: {
+      id: true,
+      routeSummary: true,
+      startLocation: true,
+      endLocation: true,
+    },
+  },
+};
+
 const ensureReviewModelReady = () => {
   if (!prisma.review) {
     throw new ApiError(503, 'Review schema is not ready. Please run Prisma migrate and generate first.');
@@ -126,8 +165,54 @@ const getDriverReviewSummary = async (driverId) => {
   };
 };
 
+const getDriverReviews = async (driverId) => {
+  ensureReviewModelReady();
+
+  const driver = await prisma.user.findUnique({
+    where: { id: driverId },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      profilePicture: true,
+      createdAt: true,
+    },
+  });
+
+  if (!driver) {
+    throw new ApiError(404, 'Driver not found');
+  }
+
+  const [summary, reviews] = await Promise.all([
+    getDriverReviewSummary(driverId),
+    prisma.review.findMany({
+      where: { driverId },
+      select: REVIEW_LIST_SELECT,
+      orderBy: { createdAt: 'desc' },
+    }),
+  ]);
+
+  return {
+    driver,
+    summary,
+    reviews,
+  };
+};
+
+const getMyWrittenReviews = async (passengerId) => {
+  ensureReviewModelReady();
+
+  return prisma.review.findMany({
+    where: { passengerId },
+    select: REVIEW_LIST_SELECT,
+    orderBy: { createdAt: 'desc' },
+  });
+};
+
 module.exports = {
   createReviewForBooking,
   getMyReviewByBooking,
   getDriverReviewSummary,
+  getDriverReviews,
+  getMyWrittenReviews,
 };

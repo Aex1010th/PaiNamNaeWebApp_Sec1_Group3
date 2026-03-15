@@ -49,7 +49,7 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                    <path d="M5 11l1-3a2 2 0 012-1h8a2 2 0 012 1l1 3h1a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 11-4 0H9a2 2 0 11-4 0H4a1 1 0 01-1-1v-3a1 1 0 011-1h1zm3-3l-1 3h10l-1-3H8z"/>
                 </svg>
-                {{ driver.totalTrips ?? 0 }}+ เที่ยว
+                {{ driver.totalReviews ?? 0 }} รีวิว
               </span>
             </div>
           </div>
@@ -263,6 +263,7 @@ import { ref, computed, onMounted } from 'vue'
 definePageMeta({ middleware: 'auth' })
 
 const route = useRoute()
+const { $api } = useNuxtApp()
 const driverId = route.params.driverId
 
 const pending = ref(true)
@@ -271,41 +272,72 @@ const allReviews = ref([])
 
 const error = ref(null)  
 
-onMounted(() => {
-  const stored = JSON.parse(localStorage.getItem('reviews') || '[]')
-  const user   = JSON.parse(localStorage.getItem('user') || '{}')
+const splitMedia = (media = []) => {
+  const groups = { images: [], videos: [], audios: [] }
+  for (const item of Array.isArray(media) ? media : []) {
+    if (item?.type === 'IMAGE') groups.images.push(item.url)
+    else if (item?.type === 'VIDEO') groups.videos.push(item.url)
+    else if (item?.type === 'AUDIO') groups.audios.push(item.url)
+  }
+  return groups
+}
 
-  const nameFromQuery = decodeURIComponent(String(route.query.driverName || ''))
+const getLocationLabel = (location, fallback) => {
+  if (location?.name?.trim()) return location.name.trim()
+  if (location?.address?.trim()) return location.address.trim()
+  return fallback
+}
 
-  let driverReviews = stored.filter(r => String(r.driverId) === String(driverId))
-  if (!driverReviews.length && nameFromQuery) {
-    driverReviews = stored.filter(r => r.driverName === nameFromQuery)
+const buildTripRoute = (review) => {
+  const startName = getLocationLabel(review.route?.startLocation, 'ต้นทาง')
+  const endName = getLocationLabel(review.route?.endLocation, 'ปลายทาง')
+
+  if (startName !== 'ต้นทาง' || endName !== 'ปลายทาง') {
+    return `${startName} → ${endName}`
   }
 
-  const first = driverReviews[0]
-  driver.value = {
-    firstName:    first?.driverName?.split(' ')[0] ?? 'ไม่ระบุ',
-    lastName:     first?.driverName?.split(' ').slice(1).join(' ') ?? '',
-    profileImage: first?.driverImage ?? '',
-    totalTrips:   driverReviews.length,
-    createdAt:    null,
+  if (review.route?.routeSummary) return review.route.routeSummary
+
+  return `${startName} → ${endName}`
+}
+
+onMounted(async () => {
+  try {
+    const data = await $api(`/reviews/driver/${driverId}`)
+
+    driver.value = {
+      firstName: data.driver?.firstName || 'ไม่ระบุ',
+      lastName: data.driver?.lastName || '',
+      profileImage: data.driver?.profilePicture || '',
+      totalReviews: data.summary?.total || 0,
+      createdAt: data.driver?.createdAt || null,
+    }
+
+    allReviews.value = (data.reviews || []).map((review) => {
+      const media = splitMedia(review.media)
+      return {
+        id: review.id,
+        bookingId: review.bookingId,
+        rating: review.rating,
+        comment: review.comment || '',
+        tags: Array.isArray(review.tags) ? review.tags : [],
+        createdAt: review.createdAt,
+        tripRoute: buildTripRoute(review),
+        images: media.images,
+        videos: media.videos,
+        audios: media.audios,
+        reviewer: {
+          firstName: review.passenger?.firstName || 'ผู้ใช้',
+          lastName: review.passenger?.lastName || '',
+          profileImage: review.passenger?.profilePicture || '',
+        },
+      }
+    })
+  } catch (err) {
+    error.value = err
+  } finally {
+    pending.value = false
   }
-
-  // ดึงชื่อ+รูปจาก user localStorage เป็น default reviewer
-  const defaultReviewer = {
-    firstName:    user.firstName    ?? user.name?.split(' ')[0] ?? 'คุณ',
-    lastName:     user.lastName     ?? user.name?.split(' ').slice(1).join(' ') ?? '',
-    profileImage: user.profilePicture ?? user.avatar ?? user.photo ?? user.image ?? '',
-  }
-
-  allReviews.value = driverReviews.map(r => ({
-    ...r,
-    reviewer: (r.reviewer?.firstName || r.reviewer?.profileImage)
-      ? r.reviewer
-      : defaultReviewer
-  }))
-
-  pending.value = false
 })
 
 // Stat

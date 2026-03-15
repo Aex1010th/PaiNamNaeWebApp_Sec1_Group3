@@ -168,7 +168,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useToast } from '~/composables/useToast'
 
 definePageMeta({ middleware: 'auth' })
@@ -244,8 +244,6 @@ function toggleTag(tag) {
     else selectedTags.value.splice(idx, 1)
 }
 
-const user = JSON.parse(localStorage.getItem('user'))
-
 async function submitReview() {
     if (rating.value === 0) {
         error.value = 'กรุณาให้คะแนนก่อนส่งรีวิว'
@@ -260,43 +258,33 @@ async function submitReview() {
     isSubmitting.value = true
 
     try {
+        const formData = new FormData()
+        formData.append('rating', String(rating.value))
 
-        const reviewData = {
-            userId: user?.id,
-            bookingId,
-            driverName: driverName.value,
-            driverId: route.query.driverId,
-            driverImage: driverImage.value,
-            tripRoute: tripRoute.value,
-            rating: rating.value,
-            comment: comment.value,
-            tags: selectedTags.value,
-            images: images.value.map(i => i.url),
-            videos: videos.value.map(v => v.url),
-            audios: audios.value.map(a => a.url),
-            createdAt: new Date(),
-            reviewer: {                             
-            firstName:    user?.firstName    ?? '',
-            lastName:     user?.lastName     ?? '',
-            profileImage: user?.profilePicture ?? '',
-            }
+        if (comment.value?.trim()) {
+            formData.append('comment', comment.value.trim())
+        }
+        if (selectedTags.value.length) {
+            formData.append('tags', JSON.stringify(selectedTags.value))
         }
 
-        // ดึงของเก่ามาก่อน
-        const existing = JSON.parse(localStorage.getItem('reviews') || '[]')
+        images.value.forEach((item) => formData.append('images', item.file))
+        videos.value.forEach((item) => formData.append('videos', item.file))
+        audios.value.forEach((item) => formData.append('audios', item.file))
 
-        // เพิ่มรีวิวใหม่
-        existing.unshift(reviewData)
+        await $api(`/reviews/booking/${bookingId}`, {
+            method: 'POST',
+            body: formData,
+        })
 
-        // เก็บกลับ
-        localStorage.setItem('reviews', JSON.stringify(existing))
+        hasExistingReview.value = true
 
         toast.success('ขอบคุณสำหรับรีวิว!', 'รีวิวของคุณถูกบันทึกแล้ว')
 
         router.push('/profile/review-history')
 
     } catch (err) {
-        error.value = 'เกิดข้อผิดพลาด'
+        error.value = err?.data?.message || err?.statusMessage || 'เกิดข้อผิดพลาด ลองใหม่อีกครั้ง'
     } finally {
         isSubmitting.value = false
     }

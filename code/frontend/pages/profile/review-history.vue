@@ -208,6 +208,7 @@ import ProfileSidebar from '~/components/ProfileSidebar.vue'
 
 const reviews = ref([])
 const preview = ref({ show: false, type: '', url: '' })
+const { $api } = useNuxtApp()
 
 const avgRating = computed(() => {
   if (!reviews.value.length) return '—'
@@ -249,12 +250,57 @@ const closePreview = () => {
   preview.value = { show: false, type: '', url: '' }
 }
 
-onMounted(() => {
-  const data = localStorage.getItem('reviews')
-  const user = JSON.parse(localStorage.getItem('user') || '{}')
-  if (data) {
-    const allReviews = JSON.parse(data)
-    reviews.value = allReviews.filter(r => String(r.userId) === String(user.id))
+const splitMedia = (media = []) => {
+  const groups = { images: [], videos: [], audios: [] }
+  for (const item of Array.isArray(media) ? media : []) {
+    if (item?.type === 'IMAGE') groups.images.push(item.url)
+    else if (item?.type === 'VIDEO') groups.videos.push(item.url)
+    else if (item?.type === 'AUDIO') groups.audios.push(item.url)
+  }
+  return groups
+}
+
+const getLocationLabel = (location, fallback) => {
+  if (location?.name?.trim()) return location.name.trim()
+  if (location?.address?.trim()) return location.address.trim()
+  return fallback
+}
+
+const buildTripRoute = (review) => {
+  const startName = getLocationLabel(review.route?.startLocation, 'ต้นทาง')
+  const endName = getLocationLabel(review.route?.endLocation, 'ปลายทาง')
+
+  if (startName !== 'ต้นทาง' || endName !== 'ปลายทาง') {
+    return `${startName} → ${endName}`
+  }
+
+  if (review.route?.routeSummary) return review.route.routeSummary
+
+  return `${startName} → ${endName}`
+}
+
+onMounted(async () => {
+  try {
+    const data = await $api('/reviews/me')
+    reviews.value = (data || []).map((review) => {
+      const media = splitMedia(review.media)
+      return {
+        bookingId: review.bookingId,
+        createdAt: review.createdAt,
+        rating: review.rating,
+        comment: review.comment || '',
+        tags: Array.isArray(review.tags) ? review.tags : [],
+        driverName: `${review.driver?.firstName || ''} ${review.driver?.lastName || ''}`.trim() || 'ไม่ระบุ',
+        driverImage: review.driver?.profilePicture || '',
+        tripRoute: buildTripRoute(review),
+        images: media.images,
+        videos: media.videos,
+        audios: media.audios,
+      }
+    })
+  } catch (err) {
+    console.error('Failed to load review history', err)
+    reviews.value = []
   }
 })
 </script>

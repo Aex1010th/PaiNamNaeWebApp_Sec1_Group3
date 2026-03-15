@@ -78,8 +78,30 @@ const getDriverSummary = asyncHandler(async (req, res) => {
   });
 });
 
+const getDriverReviews = asyncHandler(async (req, res) => {
+  const { driverId } = req.params;
+  const data = await reviewService.getDriverReviews(driverId);
+
+  res.status(200).json({
+    success: true,
+    data,
+  });
+});
+
+const getMyWrittenReviews = asyncHandler(async (req, res) => {
+  const passengerId = req.user.sub;
+  const reviews = await reviewService.getMyWrittenReviews(passengerId);
+
+  res.status(200).json({
+    success: true,
+    data: reviews,
+  });
+});
+
 module.exports = {
   createReview,
   getMyReviewByBooking,
   getDriverSummary,
+  getDriverReviews,
+  getMyWrittenReviews,
 };
