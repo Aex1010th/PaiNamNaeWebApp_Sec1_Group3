@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen flex flex-col bg-gray-50 overflow-hidden">
+  <div>
     <AdminHeader />
     <div class="flex flex-1 overflow-hidden">
       <AdminSidebar />
@@ -8,7 +8,7 @@
         <div class="mb-8 flex items-center justify-between">
           <div class="flex items-center gap-4">
             <button @click="$router.back()"
-              class="flex items-center justify-center w-10 h-10 bg-white border rounded-xl shadow-sm hover:bg-gray-100 transition text-gray-600">
+              class="flex items-center justify-center w-10 h-10 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 transition text-gray-600">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd"
                   d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
@@ -39,8 +39,8 @@
 
           <!-- Left -->
           <div class="lg:col-span-2 space-y-6">
-            <div class="bg-white rounded-2xl shadow-sm border p-6">
-              <h2 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">General Information</h2>
+            <div class="bg-white rounded-lg border border-gray-300 shadow-sm p-6">
+              <h2 class="text-lg font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">General Information</h2>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
                 <div>
                   <p class="text-xs text-gray-500 mb-1 uppercase tracking-wider">Report ID</p>
@@ -80,7 +80,7 @@
                   <p class="text-xs text-gray-500 mb-1 uppercase tracking-wider">Reported Time</p>
                   <p class="font-medium text-gray-800">{{ formatDate(incident.createdAt) }}</p>
                 </div>
-                <div class="md:col-span-2 border-t pt-4 mt-2">
+                <div class="md:col-span-2 border-t border-gray-200 pt-4 mt-2">
                   <p class="text-xs text-gray-500 mb-1 uppercase tracking-wider">Description</p>
                   <p class="font-medium text-gray-800 leading-relaxed whitespace-pre-line">{{ incident.description }}</p>
                 </div>
@@ -88,11 +88,11 @@
             </div>
 
             <!-- Admin Response -->
-            <div class="bg-white rounded-2xl shadow-sm border p-6">
-              <h2 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Admin Response</h2>
+            <div class="bg-white rounded-lg border border-gray-300 shadow-sm p-6">
+              <h2 class="text-lg font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">Admin Response</h2>
 
               <!-- Previous reply -->
-              <div v-if="incident.adminReply" class="mb-4 p-4 bg-blue-50 rounded-xl border border-blue-100">
+              <div v-if="incident.adminReply" class="mb-4 p-4 bg-blue-50 rounded-md border border-blue-100">
                 <p class="text-xs text-blue-500 uppercase mb-1">Previous Reply</p>
                 <p class="text-blue-700 text-sm">{{ incident.adminReply }}</p>
               </div>
@@ -101,7 +101,7 @@
                 <div>
                   <label class="text-xs text-gray-500 uppercase mb-1 block">Update Status</label>
                   <select v-model="form.status"
-                    class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                     <option value="RECEIVED">Received</option>
                     <option value="IN_PROGRESS">In Progress</option>
                     <option value="RESOLVED">Resolved</option>
@@ -111,7 +111,7 @@
 
                 <textarea v-model="form.adminReply" rows="5"
                   placeholder="Write your response, findings, or reason for rejection here..."
-                  class="w-full p-4 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm text-gray-700 resize-y" />
+                  class="w-full p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none text-sm text-gray-700 resize-y" />
 
                 <div class="flex items-center justify-between">
                   <p class="text-xs text-gray-500">* Please provide details before rejecting or resolving.</p>
@@ -139,10 +139,10 @@
 
           <!-- Right: Media -->
           <div class="space-y-6">
-            <div class="bg-white rounded-2xl shadow-sm border p-6">
-              <h2 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Attached Media</h2>
+            <div class="bg-white rounded-lg border border-gray-300 shadow-sm p-6">
+              <h2 class="text-lg font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">Attached Media</h2>
               <div v-if="incident.media?.length" class="space-y-4">
-                <div v-for="(file, i) in incident.media" :key="i" class="border rounded-xl p-3 bg-gray-50">
+                <div v-for="(file, i) in incident.media" :key="i" class="border border-gray-200 rounded-md p-3 bg-gray-50">
                   <p class="text-xs font-medium text-gray-600 mb-2 truncate">📎 {{ file.fileName ?? file.type }}</p>
                   <img v-if="file.type === 'IMAGE'" :src="file.url"
                     class="rounded-lg w-full max-h-48 object-contain bg-gray-200" />
@@ -151,7 +151,7 @@
                   <audio v-else-if="file.type === 'AUDIO'" :src="file.url" controls class="w-full mt-2 h-10" />
                 </div>
               </div>
-              <div v-else class="text-center py-8 text-gray-400 text-sm border-2 border-dashed rounded-xl">
+              <div v-else class="text-center py-8 text-gray-400 text-sm border-2 border-dashed border-gray-200 rounded-md">
                 No media attached
               </div>
             </div>

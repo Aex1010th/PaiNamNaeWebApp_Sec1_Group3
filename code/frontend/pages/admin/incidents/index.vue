@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen flex flex-col bg-gray-50 overflow-hidden">
+  <div>
     <AdminHeader />
     <div class="flex flex-1 overflow-hidden">
       <AdminSidebar />
@@ -12,27 +12,27 @@
 
         <!-- Summary Stats -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div class="bg-white p-4 rounded-xl border shadow-sm">
+          <div class="bg-white p-4 rounded-lg border border-gray-300 shadow-sm">
             <p class="text-xs text-gray-500 uppercase">Total Reports</p>
             <p class="text-2xl font-semibold text-gray-800">{{ totalCount }}</p>
           </div>
-          <div class="bg-white p-4 rounded-xl border shadow-sm">
+          <div class="bg-white p-4 rounded-lg border border-gray-300 shadow-sm">
             <p class="text-xs text-gray-500 uppercase">In Progress</p>
             <p class="text-2xl font-semibold text-yellow-600">{{ inProgressCount }}</p>
           </div>
-          <div class="bg-white p-4 rounded-xl border shadow-sm">
+          <div class="bg-white p-4 rounded-lg border border-gray-300 shadow-sm">
             <p class="text-xs text-gray-500 uppercase">Resolved</p>
             <p class="text-2xl font-semibold text-green-600">{{ resolvedCount }}</p>
           </div>
         </div>
 
         <!-- Controls -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="mb-4 bg-white border border-gray-300 rounded-lg shadow-sm px-4 py-4 sm:px-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <input v-model="searchQuery" type="text" placeholder="Search by title..."
-            class="px-4 py-2 border rounded-xl text-sm w-full md:w-80 focus:ring-2 focus:ring-blue-500 outline-none" />
+            class="w-full md:w-80 px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:outline-none" />
           <div class="flex gap-2 flex-wrap">
             <button v-for="f in filters" :key="f.value" @click="setFilter(f.value)"
-              class="px-4 py-2 text-xs font-medium rounded-full border transition"
+              class="px-4 py-2 text-xs font-medium rounded-full border border-gray-300 transition"
               :class="currentFilter === f.value ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 hover:bg-gray-100'">
               {{ f.label }}
             </button>
@@ -46,7 +46,7 @@
         <div v-else-if="error" class="text-center py-12 text-red-500">เกิดข้อผิดพลาด: {{ error.message }}</div>
 
         <!-- Table -->
-        <div v-else class="bg-white rounded-2xl shadow-sm border overflow-hidden">
+        <div v-else class="bg-white border border-gray-300 rounded-lg shadow-sm">
           <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
               <thead class="bg-gray-100 text-xs uppercase text-gray-500">
@@ -89,10 +89,10 @@
                 </tr>
               </thead>
 
-              <tbody v-if="paginatedIncidents.length">
+              <tbody v-if="paginatedIncidents.length" class="bg-white divide-y divide-gray-200">
                 <tr v-for="item in paginatedIncidents" :key="item.id"
                   @click="goToDetail(item)"
-                  class="border-t hover:bg-blue-50 transition cursor-pointer">
+                  class="transition-opacity hover:bg-gray-50 cursor-pointer">
                   <td class="px-6 py-4">
                     <div class="font-medium text-blue-600">{{ item.title }}</div>
                     <div class="text-xs text-gray-400">{{ item.id }}</div>
@@ -122,13 +122,13 @@
           </div>
 
           <!-- Pagination -->
-          <div class="flex justify-between items-center px-6 py-4 border-t text-sm">
+          <div class="flex justify-between items-center px-6 py-4 border-t border-gray-200 text-sm">
             <div class="text-gray-500">Page {{ currentPage }} of {{ totalPages }}</div>
             <div class="flex gap-2">
               <button @click="prevPage" :disabled="currentPage === 1"
-                class="px-4 py-2 border rounded-lg disabled:opacity-40 hover:bg-gray-100">Previous</button>
+                class="px-3 py-2 text-sm border rounded-md disabled:opacity-50">Previous</button>
               <button @click="nextPage" :disabled="currentPage === totalPages"
-                class="px-4 py-2 border rounded-lg disabled:opacity-40 hover:bg-gray-100">Next</button>
+                class="px-3 py-2 text-sm border rounded-md disabled:opacity-50">Next</button>
             </div>
           </div>
         </div>
