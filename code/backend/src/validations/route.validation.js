@@ -88,6 +88,10 @@ const cancelRouteSchema = z.object({
   reason: cancelReasonEnum
 });
 
+const updateRouteStatusSchema = z.object({
+  status: z.enum(['IN_TRANSIT', 'COMPLETED'])
+})
+
 module.exports = {
   idParamSchema,
   createRouteSchema,
@@ -97,5 +101,6 @@ module.exports = {
   adminDriverIdParamSchema,
   listRoutesQuerySchema,
   cancelReasonEnum,
-  cancelRouteSchema
+  cancelRouteSchema,
+  updateRouteStatusSchema,
 };
