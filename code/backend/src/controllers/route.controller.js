@@ -476,6 +476,23 @@ const cancelRoute = asyncHandler(async (req, res) => {
   });
 });
 
+const updateRouteStatus = asyncHandler(async (req, res) => {
+    const driverId = req.user.sub
+    const { id } = req.params
+    const { status } = req.body
+
+    const existing = await routeService.getRouteById(id)
+    if (!existing) throw new ApiError(404, "Route not found")
+    if (existing.driverId !== driverId) throw new ApiError(403, "Forbidden")
+
+    const updated = await routeService.updateRoute(id, { status })
+    res.status(200).json({
+        success: true,
+        message: "Route status updated successfully",
+        data: updated
+    })
+});
+
 module.exports = {
   getAllRoutes,
   listRoutes,
@@ -490,4 +507,5 @@ module.exports = {
   adminDeleteRoute,
   adminGetRoutesByDriver,
   cancelRoute,
+  updateRouteStatus, // เพิ่ม
 };

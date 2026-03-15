@@ -117,14 +117,21 @@
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <div class="flex items-center mt-1">
-                                                    <div class="flex text-yellow-400">
-                                                        <span v-for="star in 5" :key="star">{{ star <=
-                                                            route.driver.rating ? '★' : '☆' }}</span>
-                                                    </div>
-                                                    <span class="ml-2 text-sm text-gray-600">
-                                                        {{ route.driver.rating }} ({{ route.driver.reviews }} รีวิว)
-                                                    </span>
+                                                <div class="mt-3">
+                                                    <DriverReviewPreview
+                                                        :reviews="{
+                                                            average: route.driver.rating || 0,
+                                                            total: route.driver.reviews || 0,
+                                                            breakdown: route.driver.reviewBreakdown || {
+                                                                5: Math.floor((route.driver.reviews || 0) * 0.7),
+                                                                4: Math.floor((route.driver.reviews || 0) * 0.2),
+                                                                3: Math.floor((route.driver.reviews || 0) * 0.07),
+                                                                2: Math.floor((route.driver.reviews || 0) * 0.02),
+                                                                1: Math.floor((route.driver.reviews || 0) * 0.01)
+                                                            }
+                                                        }"
+                                                    
+                                                    />
                                                 </div>
                                             </div>
                                             <div class="text-right">
