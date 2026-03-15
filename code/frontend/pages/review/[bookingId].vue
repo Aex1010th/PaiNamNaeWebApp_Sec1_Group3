@@ -26,13 +26,13 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-3">คะแนนความพึงพอใจ</label>
                         <div class="flex justify-center gap-3">
-                            <button v-for="star in 5" :key="star"
-                                @click="rating = star"
+                            <button v-for="star in 5" :key="star" @click="rating = star"
                                 class="transition-transform hover:scale-110 focus:outline-none">
                                 <svg class="w-12 h-12 transition-colors duration-150"
-                                    :class="star <= rating ? 'text-yellow-400' : 'text-gray-200'"
-                                    fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                    :class="star <= rating ? 'text-yellow-400' : 'text-gray-200'" fill="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                 </svg>
                             </button>
                         </div>
@@ -54,95 +54,75 @@
                             เลือกคะแนนก่อนเพื่อดูแท็กที่เกี่ยวข้อง
                         </div>
                         <div v-else class="flex flex-wrap gap-2">
-                            <button v-for="tag in availableTags" :key="tag"
-                                @click="toggleTag(tag)"
-                                :class="[
-                                    'px-3 py-1.5 rounded-full text-sm border transition-all duration-150',
-                                    selectedTags.includes(tag)
-                                        ? 'bg-blue-600 text-white border-blue-600'
-                                        : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400'
-                                ]">
+                            <button v-for="tag in availableTags" :key="tag" @click="toggleTag(tag)" :class="[
+                                'px-3 py-1.5 rounded-full text-sm border transition-all duration-150',
+                                selectedTags.includes(tag)
+                                    ? 'bg-blue-600 text-white border-blue-600'
+                                    : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400'
+                            ]">
                                 {{ tag }}
                             </button>
                         </div>
                     </div>
 
                     <!-- Media Upload -->
-                    <div class="space-y-4">
-                        <label class="block text-sm font-medium text-gray-700">รูปภาพ / วิดีโอ (ไม่บังคับ)</label>
-
-                        <!-- Images -->
-                        <div>
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-xs text-gray-500">รูปภาพ ({{ images.length }}/3)</span>
-                                <label v-if="images.length < 3"
-                                    class="cursor-pointer px-3 py-1.5 text-xs text-blue-600 border border-blue-300 rounded-full hover:bg-blue-50 transition">
-                                    + เพิ่มรูป
-                                    <input type="file" accept="image/*" multiple class="hidden" @change="handleImageUpload" />
-                                </label>
-                            </div>
-                            <div v-if="images.length" class="grid grid-cols-3 gap-2">
-                                <div v-for="(img, idx) in images" :key="idx" class="relative group aspect-square">
-                                    <img :src="img.url" class="w-full h-full object-cover rounded-lg" />
-                                    <button @click="removeImage(idx)"
-                                        class="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                                        ✕
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Videos -->
-                        <div>
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-xs text-gray-500">วิดีโอ ({{ videos.length }}/3)</span>
-                                <label v-if="videos.length < 3"
-                                    class="cursor-pointer px-3 py-1.5 text-xs text-blue-600 border border-blue-300 rounded-full hover:bg-blue-50 transition">
-                                    + เพิ่มวิดีโอ
-                                    <input type="file" accept="video/mp4" multiple class="hidden" @change="handleVideoUpload" />
-                                </label>
-                            </div>
-                            <div v-if="videos.length" class="space-y-2">
-                                <div v-for="(vid, idx) in videos" :key="idx"
-                                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                    <div class="flex items-center gap-2 min-w-0">
-                                        <span class="text-xl">🎬</span>
-                                        <span class="text-sm text-gray-700 truncate">{{ vid.name }}</span>
-                                    </div>
-                                    <button @click="removeVideo(idx)"
-                                        class="ml-2 w-6 h-6 bg-red-100 text-red-500 rounded-full text-xs flex items-center justify-center hover:bg-red-200 transition flex-shrink-0">
-                                        ✕
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Audio -->
                     <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs text-gray-500">ไฟล์เสียง ({{ audios.length }}/3)</span>
-                            <label v-if="audios.length < 3"
-                                class="cursor-pointer px-3 py-1.5 text-xs text-blue-600 border border-blue-300 rounded-full hover:bg-blue-50 transition">
-                                + เพิ่มเสียง
-                                <input type="file" accept="audio/*" multiple class="hidden" @change="handleAudioUpload" />
-                            </label>
-                        </div>
-                        <div v-if="audios.length" class="space-y-2">
-                            <div v-for="(aud, idx) in audios" :key="idx"
-                                class="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-2 min-w-0">
-                                        <span class="text-xl">🎵</span>
-                                        <span class="text-sm text-gray-700 truncate">{{ aud.name }}</span>
-                                    </div>
-                                    <button @click="removeAudio(idx)"
-                                        class="ml-2 w-6 h-6 bg-red-100 text-red-500 rounded-full text-xs flex items-center justify-center hover:bg-red-200 transition flex-shrink-0">
-                                        ✕
-                                    </button>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">รูปภาพ / วิดีโอ / เสียง
+                            (ไม่บังคับ)</label>
+
+                        <div class="p-4 border border-gray-200 rounded-2xl bg-white">
+
+                            <!-- Upload Box -->
+                            <label
+                                class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
+                                <div class="text-gray-400 mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4v16m8-8H4" />
+                                    </svg>
                                 </div>
-                                <audio :src="aud.url" controls class="w-full h-8" />
+                                <p class="text-sm text-gray-500">คลิกเพื่อแนบไฟล์</p>
+                                <p class="text-xs text-gray-400">รูป / เสียง / วิดีโอ</p>
+                                <input type="file" accept="image/*,video/mp4,audio/*" multiple @change="handleUpload"
+                                    class="hidden" />
+                            </label>
+
+                            <p class="px-4 py-2 text-gray-400 text-sm">
+                                แนบได้ไม่เกิน 3 ไฟล์ (รวม {{ getTotalFiles() }}/3)
+                            </p>
+
+                            <!-- Preview รูปและวิดีโอ -->
+                            <div v-if="images.length || videos.length" class="mt-4">
+                                <div class="grid grid-cols-3 gap-3">
+                                    <div v-for="(file, index) in images" :key="'img' + index" class="relative">
+                                        <img :src="file.url" @click="openPreview('image', file.url)"
+                                            class="w-full aspect-square object-cover rounded-xl cursor-pointer" />
+                                        <button @click.stop="removeFile('image', index)"
+                                            class="absolute top-1 right-1 bg-black/60 text-white w-5 h-5 rounded-full text-xs flex items-center justify-center">✕</button>
+                                    </div>
+
+                                    <div v-for="(file, index) in videos" :key="'vid' + index" class="relative">
+                                        <video :src="file.url" controls
+                                            class="w-full aspect-square object-cover rounded-xl cursor-pointer"></video>
+                                        <button @click.stop="removeFile('video', index)"
+                                            class="absolute top-1 right-1 bg-black/60 text-white w-5 h-5 rounded-full text-xs flex items-center justify-center">✕</button>
+                                    </div>
+                                </div>
                             </div>
+
+                            <!-- Preview เสียง -->
+                            <div v-if="audios.length" class="mt-4 space-y-2">
+                                <div v-for="(file, index) in audios" :key="index"
+                                    class="flex items-center justify-between p-2 bg-gray-100 rounded hover:bg-gray-200">
+                                    <span class="flex items-center gap-2 text-sm text-gray-700 truncate">
+                                        🎵 {{ file.name }}
+                                    </span>
+                                    <button @click.stop="removeFile('audio', index)"
+                                        class="text-gray-500 hover:text-red-500 text-sm ml-2 flex-shrink-0">ลบ</button>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
 
@@ -165,10 +145,29 @@
             </div>
         </div>
     </div>
+
+    <!-- Preview Modal -->
+    <div v-if="preview.show" class="fixed inset-0 bg-white/40 backdrop-blur-sm flex items-center justify-center z-50"
+        @click.self="closePreview">
+        <div class="relative max-w-5xl w-full px-4">
+            <button @click="closePreview"
+                class="absolute -top-12 right-0 bg-black/70 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-black transition">✕</button>
+
+            <img v-if="preview.type === 'image'" :src="preview.url"
+                class="w-full max-h-[80vh] object-contain rounded-lg" />
+
+            <video v-if="preview.type === 'video'" :src="preview.url" controls autoplay
+                class="w-full max-h-[80vh] rounded-lg"></video>
+
+            <div v-if="preview.type === 'audio'" class="bg-white p-6 rounded-lg">
+                <audio :src="preview.url" controls autoplay class="w-full"></audio>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useToast } from '~/composables/useToast'
 
 definePageMeta({ middleware: 'auth' })
@@ -188,12 +187,16 @@ const isSubmitting = ref(false)
 const error = ref('')
 const hasExistingReview = ref(false)
 
-// ดึงข้อมูลจาก query params (ส่งมาจากหน้า myTrip)
+const images = ref([])
+const videos = ref([])
+const audios = ref([])
+
+// ดึงข้อมูลจาก query params
 const driverName = computed(() => route.query.driverName || 'ผู้ขับ')
 const driverImage = computed(() => route.query.driverImage || `https://ui-avatars.com/api/?name=Driver&background=random&size=64`)
 const tripRoute = computed(() => route.query.tripRoute || '')
 
-// แทนที่ availableTags เดิม
+// Tags แยกตาม rating
 const tagsByRating = {
     1: ['🤬 ขับประมาท', '💢 พูดจาไม่ดี', '🚫 ไม่ตรงเวลาเลย', '😱 รู้สึกไม่ปลอดภัย', '🚗 รถสกปรกมาก', '❌ ไม่แนะนำเลย', '📵 ติดต่อไม่ได้'],
     2: ['😤 ขับเร็วเกินไป', '⏰ มาสายมาก', '🙁 ไม่ค่อยเป็นมิตร', '🗺️ หลงทาง', '🚙 รถไม่สะอาด', '💬 สื่อสารไม่ดี', '📍 นัดพบลำบาก'],
@@ -204,30 +207,9 @@ const tagsByRating = {
 
 const availableTags = computed(() => tagsByRating[rating.value] || [])
 
-// เคลียร์ tags เมื่อเปลี่ยน rating
 watch(rating, () => { selectedTags.value = [] })
 
-// เพิ่ม audio state
-const audios = ref([])
-
-function handleAudioUpload(e) {
-    const files = Array.from(e.target.files)
-    if (audios.value.length + files.length > 3) {
-        toast.error('เกินจำนวน', 'อัปโหลดไฟล์เสียงได้สูงสุด 3 ไฟล์')
-        return
-    }
-    files.forEach(file => {
-        audios.value.push({
-            file,
-            url: URL.createObjectURL(file),
-            name: file.name
-        })
-    })
-    e.target.value = ''
-}
-
-function removeAudio(idx) { audios.value.splice(idx, 1) }
-
+// --- Rating label & color ---
 const ratingLabel = computed(() => {
     const labels = ['', 'แย่มาก', 'พอใช้', 'ดี', 'ดีมาก', 'ยอดเยี่ยม']
     return labels[rating.value] || 'เลือกคะแนน'
@@ -243,6 +225,65 @@ function toggleTag(tag) {
     if (idx === -1) selectedTags.value.push(tag)
     else selectedTags.value.splice(idx, 1)
 }
+
+// --- File Upload ---
+const getTotalFiles = () => images.value.length + videos.value.length + audios.value.length
+
+const handleUpload = (e) => {
+    const files = Array.from(e.target.files)
+
+    if (getTotalFiles() + files.length > 3) {
+        toast.error('เกินจำนวน', 'แนบไฟล์ทั้งหมดได้สูงสุด 3 ไฟล์')
+        e.target.value = ''
+        return
+    }
+
+    files.forEach(file => {
+        const url = URL.createObjectURL(file)
+
+        if (file.type.startsWith('image')) {
+            images.value.push({ file, url, name: file.name })
+        } else if (file.type.startsWith('video')) {
+            if (file.type !== 'video/mp4') {
+                toast.error('ไม่รองรับ', 'รองรับเฉพาะวิดีโอ .mp4 เท่านั้น')
+                return
+            }
+            videos.value.push({ file, url, name: file.name })
+        } else if (file.type.startsWith('audio')) {
+            audios.value.push({ file, url, name: file.name })
+        }
+    })
+
+    e.target.value = ''
+}
+
+const removeFile = (type, index) => {
+    if (type === 'image') images.value.splice(index, 1)
+    if (type === 'video') videos.value.splice(index, 1)
+    if (type === 'audio') audios.value.splice(index, 1)
+}
+
+// --- Preview Modal ---
+const preview = reactive({ show: false, type: '', url: '' })
+
+const openPreview = (type, url) => {
+    preview.show = true
+    preview.type = type
+    preview.url = url
+}
+
+const closePreview = () => {
+    preview.show = false
+    preview.type = ''
+    preview.url = ''
+}
+
+// --- Submit ---
+const submitButtonText = computed(() => {
+    if (isSubmitting.value) return 'กำลังส่ง...'
+    if (hasExistingReview.value) return 'ส่งรีวิวแล้ว'
+    return 'ส่งรีวิว'
+})
 
 async function submitReview() {
     if (rating.value === 0) {
@@ -278,9 +319,7 @@ async function submitReview() {
         })
 
         hasExistingReview.value = true
-
         toast.success('ขอบคุณสำหรับรีวิว!', 'รีวิวของคุณถูกบันทึกแล้ว')
-
         router.push('/profile/review-history')
 
     } catch (err) {
@@ -290,51 +329,7 @@ async function submitReview() {
     }
 }
 
-
-const images = ref([])
-const videos = ref([])
-
-function handleImageUpload(e) {
-    const files = Array.from(e.target.files)
-    if (images.value.length + files.length > 3) {
-        toast.error('เกินจำนวน', 'อัปโหลดรูปภาพได้สูงสุด 3 รูป')
-        return
-    }
-    files.forEach(file => {
-        images.value.push({
-            file,
-            url: URL.createObjectURL(file),
-            name: file.name
-        })
-    })
-    e.target.value = ''
-}
-
-function handleVideoUpload(e) {
-    const files = Array.from(e.target.files)
-    if (videos.value.length + files.length > 3) {
-        toast.error('เกินจำนวน', 'อัปโหลดวิดีโอได้สูงสุด 3 คลิป')
-        return
-    }
-    files.forEach(file => {
-        videos.value.push({
-            file,
-            url: URL.createObjectURL(file),
-            name: file.name
-        })
-    })
-    e.target.value = ''
-}
-
-function removeImage(idx) { images.value.splice(idx, 1) }
-function removeVideo(idx) { videos.value.splice(idx, 1) }
-
-const submitButtonText = computed(() => {
-    if (isSubmitting.value) return 'กำลังส่ง...'
-    if (hasExistingReview.value) return 'ส่งรีวิวแล้ว'
-    return 'ส่งรีวิว'
-})
-
+// --- Load existing review ---
 onMounted(async () => {
     try {
         const review = await $api(`/reviews/booking/${bookingId}/me`)
