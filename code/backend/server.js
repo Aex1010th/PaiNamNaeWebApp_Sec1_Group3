@@ -10,9 +10,9 @@ const promClient = require('prom-client');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./src/config/swagger');
 const routes = require('./src/routes');
-const { errorHandler } = require('./src/middlewares/errorHandler');
+const { errorHandler } = require('../../backend/src/middlewares/errorHandler');
 const ApiError = require('./src/utils/ApiError')
-const { metricsMiddleware } = require('./src/middlewares/metrics');
+const { metricsMiddleware } = require('../../backend/src/middlewares/metrics');
 const ensureAdmin = require('./src/bootstrap/ensureAdmin');
 
 const app = express();

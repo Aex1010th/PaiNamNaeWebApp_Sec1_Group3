@@ -32,8 +32,6 @@ enum BookingStatus {
   CONFIRMED
   REJECTED
   CANCELLED
-  IN_TRANSIT   // เพิ่ม
-  COMPLETED    // เพิ่ม
 }
 
 enum CancelReason {
