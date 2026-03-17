@@ -1,0 +1,22 @@
+info:
+  name: passenger get my reviews
+  type: https
+  seq: 15
+
+https:
+  method: GET
+  url: "{{base_url}}reviews/me"
+  headers:
+    Authorization: Bearer {{passenger_token}} 
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status code 200", () => {
+          expect(res.getStatus()).to.equal(200);
+        });
+        
+        test("Response time is less than 200ms", () => {
+          expect(res.getResponseTime()).to.be.below(200);
+        });

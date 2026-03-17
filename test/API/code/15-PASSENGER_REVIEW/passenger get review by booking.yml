@@ -1,0 +1,22 @@
+info:
+  name: passenger get review by booking
+  type: https
+  seq: 16
+
+https:
+  method: GET
+  url: "{{base_url}}reviews/booking/{{booking_id}}/me"
+  headers:
+    Authorization: Bearer {{passenger_token}}
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status code 200", () => {
+          expect(res.getStatus()).to.equal(200);
+        });
+        
+        test("Response time is less than 200ms", () => {
+          expect(res.getResponseTime()).to.be.below(200);
+        });

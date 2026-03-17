@@ -1,0 +1,33 @@
+info:
+  name: login driver
+  type: https
+  seq: 2
+
+https:
+  method: POST
+  url: "{{base_url}}auth/login"
+  body:
+    type: json
+    raw: |
+      {
+        "username": "driver123",
+        "password": "driver987654321"
+      }
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const body = JSON.parse(res.getBody());
+        bru.setEnvVar("driver_token", body.data.token);
+        bru.setEnvVar("driver_id", body.data.user.id);
+
+    - type: tests
+      code: |-
+        test("Status code 200", () => {
+          expect(res.getStatus()).to.equal(200);
+        });
+        
+        test("Response time is less than 200ms", () => {
+          expect(res.getResponseTime()).to.be.below(200);
+        });

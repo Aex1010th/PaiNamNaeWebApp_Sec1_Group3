@@ -1,0 +1,32 @@
+info:
+  name: passenger create review
+  type: https
+  seq: 14
+
+https:
+  method: POST
+  url: "{{base_url}}reviews/booking/{{booking_id}}/status"
+  headers:
+    Authorization: Bearer {{passenger_token}}
+  body:
+    type: json
+    raw: |
+      {
+        "bookingId":"{{booking_id}}",
+        "routeId":"{{route_id}}",
+        "passengerId":"{{passenger_id}}",
+        "driverId":"{{driver_id}}",
+        "rating":5
+      }
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status code 201", () => {
+          expect(res.getStatus()).to.equal(201);
+        });
+        
+        test("Response time is less than 200ms", () => {
+          expect(res.getResponseTime()).to.be.below(200);
+        });

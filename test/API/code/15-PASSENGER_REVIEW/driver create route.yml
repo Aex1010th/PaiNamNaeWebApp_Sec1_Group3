@@ -1,0 +1,50 @@
+info:
+  name: driver create route
+  type: https
+  seq: 10
+
+https:
+  method: POST
+  url: "{{base_url}}routes"
+  headers:
+    Authorization: Bearer {{driver_token}}
+  body:
+    type: json
+    raw: |
+      {
+        "vehicleId":"{{vehicle_id}}",
+        "startLocation":{
+          "lat":16.4321527,
+          "lng":102.8235558,
+          "name":"Khon Kaen",
+          "address":"Khon Kaen"
+        },
+        "endLocation":{
+          "lat":13.7563309,
+          "lng":100.5017651,
+          "name":"Bangkok",
+          "address":"Bangkok"
+        },
+        "departureTime":"2027-01-01T09:00:00Z",
+        "availableSeats":7,
+        "pricePerSeat":50,
+        "conditions":"ห้ามสูบบุหรี่ในรถ",
+        "optimizeWaypoints":true
+      }
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const body = JSON.parse(res.getBody());
+        bru.setEnvVar("route_id", body.data.id);
+
+    - type: tests
+      code: |-
+        test("Status code 201", () => {
+          expect(res.getStatus()).to.equal(201);
+        });
+        
+        test("Response time is less than 200ms", () => {
+          expect(res.getResponseTime()).to.be.below(200);
+        });
