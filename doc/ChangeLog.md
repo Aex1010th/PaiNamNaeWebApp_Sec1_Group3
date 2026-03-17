@@ -45,3 +45,4 @@ Deploy บน Host
 [17/03/2569 | 07:30]
 - ทำการเพิ่ม test case ที่ใช้ใน robot สำหรับการ์ด passenger review
 - ทำ test api เพิ่มเติมสำหรับการ์ด passenger review
+- ทำ test report ของ UAT และ API
