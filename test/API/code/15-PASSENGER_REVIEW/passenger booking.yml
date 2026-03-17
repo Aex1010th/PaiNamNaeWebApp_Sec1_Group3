@@ -1,0 +1,46 @@
+info:
+  name: passenger booking
+  type: https
+  seq: 11
+
+https:
+  method: POST
+  url: "{{base_url}}bookings"
+  headers:
+    Authorization: Bearer {{passenger_token}}
+  body:
+    type: json
+    raw: |
+      {
+        "routeId":"{{route_id}}",
+        "numberOfSeats":2,
+        "pickupLocation":{
+          "lat":16.4321527,
+          "lng":102.8235558,
+          "name":"Khon Kaen",
+          "address":"Khon Kaen"
+        },
+        "dropoffLocation":{
+          "lat":13.7563309,
+          "lng":100.5017651,
+          "name":"Bangkok",
+          "address":"Bangkok"
+        }
+      }
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const body = JSON.parse(res.getBody());
+        bru.setEnvVar("booking_id", body.data.id);
+
+    - type: tests
+      code: |-
+        test("Status code 201", () => {
+          expect(res.getStatus()).to.equal(201);
+        });
+        
+        test("Response time is less than 200ms", () => {
+          expect(res.getResponseTime()).to.be.below(200);
+        });

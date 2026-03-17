@@ -1,0 +1,30 @@
+info:
+  name: admin get all reports
+  type: https
+  seq: 6
+
+https:
+  method: GET
+  url: "{{base_url}}reports/admin"
+  headers:
+    Authorization: Bearer {{admin_token}}
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const body = JSON.parse(res.getBody());
+        const received = body.data.filter(r => r.status === "RECEIVED");
+        if(received.length > 0){
+          bru.setEnvVar("report_id", received[0].id);
+        }
+
+    - type: tests
+      code: |-
+        test("Status code 200", () => {
+          expect(res.getStatus()).to.equal(200);
+        });
+        
+        test("Response time is less than 200ms", () => {
+          expect(res.getResponseTime()).to.be.below(200);
+        });

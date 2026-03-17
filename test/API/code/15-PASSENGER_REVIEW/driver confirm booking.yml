@@ -1,0 +1,28 @@
+info:
+  name: driver confirm booking
+  type: https
+  seq: 12
+
+https:
+  method: PATCH
+  url: "{{base_url}}bookings/{{booking_id}}/status"
+  headers:
+    Authorization: Bearer {{driver_token}}
+  body:
+    type: json
+    raw: |
+      {
+        "status":"CONFIRMED"
+      }
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status code 200", () => {
+          expect(res.getStatus()).to.equal(200);
+        });
+        
+        test("Response time is less than 200ms", () => {
+          expect(res.getResponseTime()).to.be.below(200);
+        });

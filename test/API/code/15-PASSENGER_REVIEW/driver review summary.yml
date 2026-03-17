@@ -1,0 +1,22 @@
+info:
+  name: driver review summary
+  type: https
+  seq: 17
+
+https:
+  method: GET
+  url: "{{base_url}}reviews/driver/{{driver_id}}/summary"
+  headers:
+    Authorization: Bearer {{driver_token}}
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status code 200", () => {
+          expect(res.getStatus()).to.equal(200);
+        });
+        
+        test("Response time is less than 200ms", () => {
+          expect(res.getResponseTime()).to.be.below(200);
+        });

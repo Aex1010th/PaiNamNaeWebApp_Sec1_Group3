@@ -1,0 +1,36 @@
+info:
+  name: driver create report
+  type: https
+  seq: 4
+
+https:
+  method: POST
+  url: "{{base_url}}reports"
+  headers:
+    Authorization: Bearer {{driver_token}}
+  body:
+    type: json
+    raw: |
+      {
+        "title":"ทดสอบการรายงาน",
+        "description":"ทดสอบการรายงานปัญหาผ่าน api",
+        "type":"APPLICATION_PROBLEM",
+        "category":"SYSTEM"
+      }
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const body = JSON.parse(res.getBody());
+        bru.setEnvVar("report_id", body.data.id);
+
+    - type: tests
+      code: |-
+        test("Status code 201", () => {
+          expect(res.getStatus()).to.equal(201);
+        });
+        
+        test("Response time is less than 200ms", () => {
+          expect(res.getResponseTime()).to.be.below(200);
+        });
